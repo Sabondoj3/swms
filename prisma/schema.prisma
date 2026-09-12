@@ -1,0 +1,343 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PUBLIC
+  COLLECTOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ReportStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  ASSIGNED
+  ACCEPTED
+  ON_THE_WAY
+  COLLECTED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum WasteCategoryEnum {
+  PLASTIC
+  PAPER
+  FOOD_ORGANIC
+  METAL
+  GLASS
+  E_WASTE
+  MIXED
+  HAZARDOUS
+  OTHER
+}
+
+enum ProblemType {
+  BIN_OVERFLOWING
+  ILLEGAL_DUMPING
+  BIN_DAMAGED
+  MISSED_COLLECTION
+  NO_BIN
+  SCATTERED
+  OTHER
+}
+
+enum CollectionPointStatus {
+  ACTIVE
+  FULL
+  MAINTENANCE
+  INACTIVE
+}
+
+enum ImageType {
+  BEFORE
+  AFTER
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  ACCEPTED
+  ON_THE_WAY
+  COLLECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  REPORT_SUBMITTED
+  REPORT_VERIFIED
+  COLLECTOR_ASSIGNED
+  COLLECTION_STARTED
+  WASTE_COLLECTED
+  NEW_ASSIGNMENT
+  ASSIGNMENT_UPDATED
+  ASSIGNMENT_CANCELLED
+  CRITICAL_REPORT
+  SYSTEM
+}
+
+enum OrgType {
+  UNIVERSITY
+  SCHOOL
+  MUNICIPALITY
+  COMMUNITY
+  NGO
+  CITY_COUNCIL
+  OTHER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  fullName     String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         Role     @default(PUBLIC)
+  institution  String?
+  studentId    String?
+  points       Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  reports          WasteReport[]         @relation("Reporter")
+  assignments      CollectorAssignment[] @relation("Collector")
+  assignedByMe     CollectorAssignment[] @relation("Assigner")
+  notifications    Notification[]
+  statusChanges    ReportStatusHistory[] @relation("ChangedBy")
+  badges           UserBadge[]
+  auditLogs        AuditLog[]            @relation("Actor")
+  educationalPosts EducationalPost[]     @relation("Author")
+
+  @@index([role])
+  @@index([email])
+  @@map("users")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  type      OrgType  @default(UNIVERSITY)
+  address   String?
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  collectionPoints CollectionPoint[]
+
+  @@map("organizations")
+}
+
+model CollectionPoint {
+  id                  String                @id @default(uuid())
+  code                String                @unique
+  name                String
+  organizationId      String?
+  organization        Organization?         @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  address             String
+  latitude            Float
+  longitude           Float
+  capacity            Int                   @default(240)
+  binType             String                @default("General")
+  wasteCategory       WasteCategoryEnum     @default(MIXED)
+  collectionFrequency String                @default("Daily")
+  status              CollectionPointStatus @default(ACTIVE)
+  qrPayload           String                @unique
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  reports WasteReport[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([code])
+  @@map("collection_points")
+}
+
+model WasteReport {
+  id                String            @id @default(uuid())
+  reportNumber      String            @unique
+  reporterId        String
+  reporter          User              @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  collectionPointId String?
+  collectionPoint   CollectionPoint?  @relation(fields: [collectionPointId], references: [id], onDelete: SetNull)
+  latitude          Float
+  longitude         Float
+  address           String
+  wasteCategory     WasteCategoryEnum @default(MIXED)
+  problemType       ProblemType       @default(BIN_OVERFLOWING)
+  description       String?
+  priority          Priority          @default(MEDIUM)
+  status            ReportStatus      @default(SUBMITTED)
+  internalNote      String?
+  wasteAmountKg     Float?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  completedAt       DateTime?
+
+  images        ReportImage[]
+  assignments   CollectorAssignment[]
+  history       ReportStatusHistory[]
+  notifications Notification[]
+
+  @@index([reporterId])
+  @@index([collectionPointId])
+  @@index([status])
+  @@index([priority])
+  @@index([wasteCategory])
+  @@index([createdAt])
+  @@map("waste_reports")
+}
+
+model ReportImage {
+  id        String      @id @default(uuid())
+  reportId  String
+  report    WasteReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  type      ImageType   @default(BEFORE)
+  createdAt DateTime    @default(now())
+
+  @@index([reportId])
+  @@map("report_images")
+}
+
+model CollectorAssignment {
+  id          String           @id @default(uuid())
+  reportId    String
+  report      WasteReport      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  collectorId String
+  collector   User             @relation("Collector", fields: [collectorId], references: [id], onDelete: Cascade)
+  assignedBy  String?
+  assigner    User?            @relation("Assigner", fields: [assignedBy], references: [id], onDelete: SetNull)
+  assignedAt  DateTime         @default(now())
+  acceptedAt  DateTime?
+  completedAt DateTime?
+  status      AssignmentStatus @default(ASSIGNED)
+  notes       String?
+
+  @@index([reportId])
+  @@index([collectorId])
+  @@index([status])
+  @@map("collector_assignments")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  read      Boolean          @default(false)
+  link      String?
+  reportId  String?
+  report    WasteReport?     @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model ReportStatusHistory {
+  id          String        @id @default(uuid())
+  reportId    String
+  report      WasteReport   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  oldStatus   ReportStatus?
+  newStatus   ReportStatus
+  changedById String?
+  changedBy   User?         @relation("ChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+  comment     String?
+  createdAt   DateTime      @default(now())
+
+  @@index([reportId])
+  @@map("report_status_history")
+}
+
+model WasteCategory {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String   @unique
+  description String?
+  icon        String?
+  createdAt   DateTime @default(now())
+
+  @@map("waste_categories")
+}
+
+model EducationalPost {
+  id         String   @id @default(uuid())
+  title      String
+  slug       String   @unique
+  category   String   @default("Recycling")
+  excerpt    String?
+  content    String
+  coverImage String?
+  published  Boolean  @default(true)
+  authorId   String?
+  author     User?    @relation("Author", fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([category])
+  @@index([published])
+  @@map("educational_posts")
+}
+
+model Badge {
+  id             String   @id @default(uuid())
+  code           String   @unique
+  name           String
+  description    String?
+  icon           String?
+  pointsRequired Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  holders UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  actor     User?    @relation("Actor", fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
