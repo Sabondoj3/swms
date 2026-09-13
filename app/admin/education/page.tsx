@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { Card, Button, Input } from "@/components/ui/primitives";
 
@@ -16,6 +16,12 @@ export default function AdminEducation() {
   }
   return (
     <main className="mx-auto max-w-4xl px-4 py-6">
+      <a
+        href="/admin"
+        className="mb-4 inline-block text-sm font-semibold text-green-700 hover:underline"
+      >
+        ← Back to Admin
+      </a>
       <h1 className="text-xl font-extrabold">Education content</h1>
       <Card className="mt-4 grid gap-2">
         <Input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-") })} />
@@ -25,7 +31,8 @@ export default function AdminEducation() {
         <textarea placeholder="Content (markdown-ish)" rows={5} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="rounded-xl border px-3 py-2 text-sm" />
         <Button onClick={create}>Publish</Button>
       </Card>
-      <div className="mt-4 grid gap-2">{posts.map((p) => <Card key={p.id}><p className="text-sm font-bold">{p.title}</p><p className="text-xs text-slate-500">{p.category} • /education/{p.slug}</p></Card>)}</div>
+      <div className="mt-4 grid gap-2">{posts.map((p) => <Card key={p.id}><p className="text-sm font-bold">{p.title}</p><p className="text-xs text-slate-500">{p.category} â€¢ /education/{p.slug}</p></Card>)}</div>
     </main>
   );
 }
+

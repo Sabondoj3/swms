@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -135,6 +135,12 @@ export default function AdminPoints() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
+      <a
+        href="/admin"
+        className="mb-4 inline-block text-sm font-semibold text-green-700 hover:underline"
+      >
+        ← Back to Admin
+      </a>
       <h1 className="text-xl font-extrabold">
         Collection points & QR
       </h1>
@@ -263,7 +269,7 @@ export default function AdminPoints() {
             </div>
           ) : (
             <p className="mt-2 text-sm text-slate-500">
-              Select “QR” on a point to preview, download and print.
+              Select â€œQRâ€ on a point to preview, download and print.
             </p>
           )}
         </Card>
@@ -361,7 +367,7 @@ export default function AdminPoints() {
               </p>
 
               <p className="text-xs text-slate-500">
-                {p.name} • {p.status}
+                {p.name} â€¢ {p.status}
               </p>
             </div>
 

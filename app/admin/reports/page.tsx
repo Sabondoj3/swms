@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/primitives";
@@ -17,9 +17,15 @@ export default function AdminReports() {
   }, [q, status]);
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
+      <a
+        href="/admin"
+        className="mb-4 inline-block text-sm font-semibold text-green-700 hover:underline"
+      >
+        ← Back to Admin
+      </a>
       <div className="flex items-center justify-between"><h1 className="text-xl font-extrabold">Reports</h1><a href="/api/export" className="rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white">Export CSV</a></div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search ID, location…" className="rounded-xl border px-4 py-2 text-sm" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search ID, locationâ€¦" className="rounded-xl border px-4 py-2 text-sm" />
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-xl border px-3 py-2 text-sm">
           {["ALL","SUBMITTED","UNDER_REVIEW","VERIFIED","ASSIGNED","ACCEPTED","ON_THE_WAY","COLLECTED","COMPLETED","REJECTED","CANCELLED"].map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
@@ -36,3 +42,4 @@ export default function AdminReports() {
     </main>
   );
 }
+

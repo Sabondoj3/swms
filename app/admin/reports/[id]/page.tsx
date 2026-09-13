@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { Card, Button, SecondaryButton } from "@/components/ui/primitives";
 import { StatusBadge, PriorityBadge, Timeline } from "@/components/reports/badges";
@@ -33,16 +33,22 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
     else { setMsg("Collector assigned"); load(); }
   }
 
-  if (!report) return <main className="p-8 text-sm">Loading…</main>;
+  if (!report) return <main className="p-8 text-sm">Loadingâ€¦</main>;
   return (
     <main className="mx-auto max-w-4xl px-4 py-6">
+      <a
+        href="/admin"
+        className="mb-4 inline-block text-sm font-semibold text-green-700 hover:underline"
+      >
+        ← Back to Admin
+      </a>
       <h1 className="font-mono text-lg font-extrabold">{report.reportNumber}</h1>
       <div className="mt-2 flex gap-2"><StatusBadge status={report.status} /><PriorityBadge priority={report.priority} /></div>
       {msg ? <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm">{msg}</p> : null}
       <div className="mt-3 grid gap-2">{report.images.map((im, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img key={i} src={im.imageUrl} alt={im.type} className="w-full rounded-2xl object-cover" />))}</div>
-      <Card className="mt-3 text-sm"><p><strong>{report.address}</strong></p><p>{report.wasteCategory} • {report.problemType}</p><p className="mt-1 text-slate-600">{report.description}</p></Card>
+      <Card className="mt-3 text-sm"><p><strong>{report.address}</strong></p><p>{report.wasteCategory} â€¢ {report.problemType}</p><p className="mt-1 text-slate-600">{report.description}</p></Card>
       <div className="mt-2"><Timeline current={report.status} /></div>
       <Card className="mt-4">
         <p className="font-bold">Verify / update</p>
@@ -56,12 +62,13 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
       <Card className="mt-4">
         <p className="font-bold">Assign collector</p>
         <div className="mt-2 flex flex-col gap-2">
-          <select value={collectorId} onChange={(e) => setCollectorId(e.target.value)} className="rounded-xl border px-3 py-2 text-sm"><option value="">Select collector…</option>{collectors.map((c) => <option key={c.id} value={c.id}>{c.fullName} — {c.activeJobs} active</option>)}</select>
+          <select value={collectorId} onChange={(e) => setCollectorId(e.target.value)} className="rounded-xl border px-3 py-2 text-sm"><option value="">Select collectorâ€¦</option>{collectors.map((c) => <option key={c.id} value={c.id}>{c.fullName} â€” {c.activeJobs} active</option>)}</select>
           <SecondaryButton onClick={assign} disabled={!collectorId}>Assign</SecondaryButton>
         </div>
       </Card>
       <h2 className="mt-6 font-bold">History</h2>
-      <div className="mt-2 grid gap-2">{report.history.map((h) => <Card key={h.id}><p className="text-xs font-bold">{h.oldStatus ?? "—"} → {h.newStatus}</p><p className="text-xs text-slate-500">{h.comment}</p></Card>)}</div>
+      <div className="mt-2 grid gap-2">{report.history.map((h) => <Card key={h.id}><p className="text-xs font-bold">{h.oldStatus ?? "â€”"} â†’ {h.newStatus}</p><p className="text-xs text-slate-500">{h.comment}</p></Card>)}</div>
     </main>
   );
 }
+
