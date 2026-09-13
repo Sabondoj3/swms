@@ -86,8 +86,8 @@ export default function AdminPoints() {
       code: "",
       name: "",
       address: "",
-      latitude: -17.824858,
-      longitude: 31.053028,
+      latitude: 26.1122288,
+      longitude: 91.6520905,
       binType: "General",
       capacity: 240,
     });
@@ -141,6 +141,7 @@ export default function AdminPoints() {
       >
         ← Back to Admin
       </a>
+
       <h1 className="text-xl font-extrabold">
         Collection points & QR
       </h1>
@@ -269,7 +270,7 @@ export default function AdminPoints() {
             </div>
           ) : (
             <p className="mt-2 text-sm text-slate-500">
-              Select â€œQRâ€ on a point to preview, download and print.
+              Select "QR" on a point to preview, download and print.
             </p>
           )}
         </Card>
@@ -367,7 +368,7 @@ export default function AdminPoints() {
               </p>
 
               <p className="text-xs text-slate-500">
-                {p.name} â€¢ {p.status}
+                {p.name} | {p.status}
               </p>
             </div>
 
