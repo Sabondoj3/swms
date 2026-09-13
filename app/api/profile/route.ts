@@ -27,6 +27,7 @@ export async function GET() {
       role: true,
       institution: true,
       studentId: true,
+      profileImage: true,
       points: true,
       isActive: true,
       createdAt: true,
@@ -90,6 +91,11 @@ export async function PATCH(request: Request) {
       ? body.studentId.trim()
       : undefined;
 
+  const profileImage =
+    typeof body.profileImage === "string"
+      ? body.profileImage.trim()
+      : undefined;
+
   if (!fullName) {
     return NextResponse.json(
       { error: "Full name is required" },
@@ -104,6 +110,7 @@ export async function PATCH(request: Request) {
       phone: phone || null,
       institution: institution || null,
       studentId: studentId || null,
+      profileImage: profileImage || null,
     },
     select: {
       id: true,
@@ -113,6 +120,7 @@ export async function PATCH(request: Request) {
       role: true,
       institution: true,
       studentId: true,
+      profileImage: true,
       points: true,
       isActive: true,
     },

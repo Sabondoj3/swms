@@ -111,6 +111,7 @@ model User {
   role         Role     @default(PUBLIC)
   institution  String?
   studentId    String?
+  profileImage String?
   points       Int      @default(0)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
