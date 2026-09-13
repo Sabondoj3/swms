@@ -27,8 +27,8 @@ export default function AdminPoints() {
     code: "",
     name: "",
     address: "",
-    latitude: -17.824858,
-    longitude: 31.053028,
+    latitude: 26.1122288,
+    longitude: 91.6520905,
     binType: "General",
     capacity: 240,
   });
