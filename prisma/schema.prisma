@@ -78,6 +78,20 @@ enum AssignmentStatus {
   CANCELLED
 }
 
+enum SmartBinConnectivity {
+  NO_DATA
+  ONLINE
+  STALE
+  OFFLINE
+  SENSOR_ERROR
+}
+
+enum SmartBinAlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
 enum NotificationType {
   INFO
   REPORT_SUBMITTED
@@ -164,12 +178,79 @@ model CollectionPoint {
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 
-  reports WasteReport[]
+  reports   WasteReport[]
+  smartBins SmartBin[]
 
   @@index([organizationId])
   @@index([status])
   @@index([code])
   @@map("collection_points")
+}
+
+model SmartBin {
+  id                String               @id @default(uuid())
+  deviceId          String               @unique
+  displayName       String
+  locality          String?
+  latitude          Float?
+  longitude         Float?
+  collectionPointId String?
+  collectionPoint   CollectionPoint?     @relation(fields: [collectionPointId], references: [id], onDelete: SetNull)
+  deviceTokenHash   String
+  deviceTokenLast4  String
+  emptyDistanceCm   Float
+  fullDistanceCm    Float
+  warningThreshold  Float                @default(70)
+  criticalThreshold Float                @default(90)
+  offlineTimeoutMin Int                  @default(30)
+  active            Boolean              @default(true)
+  connectivity      SmartBinConnectivity @default(NO_DATA)
+  lastSeenAt        DateTime?
+  latestDistanceCm  Float?
+  latestFillPercent Float?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  readings SmartBinReading[]
+  alerts   SmartBinAlert[]
+
+  @@index([connectivity])
+  @@index([active])
+  @@index([collectionPointId])
+  @@map("smart_bins")
+}
+
+model SmartBinReading {
+  id              String   @id @default(uuid())
+  smartBinId      String
+  smartBin        SmartBin @relation(fields: [smartBinId], references: [id], onDelete: Cascade)
+  deviceReadingId String
+  measuredAt      DateTime
+  receivedAt      DateTime @default(now())
+  distanceCm      Float
+  fillPercent     Float
+  sensorOk        Boolean  @default(true)
+
+  @@unique([smartBinId, deviceReadingId])
+  @@index([smartBinId, measuredAt])
+  @@map("smart_bin_readings")
+}
+
+model SmartBinAlert {
+  id          String              @id @default(uuid())
+  smartBinId  String
+  smartBin    SmartBin            @relation(fields: [smartBinId], references: [id], onDelete: Cascade)
+  level       Priority
+  status      SmartBinAlertStatus @default(OPEN)
+  fillPercent Float
+  message     String
+  openedAt    DateTime            @default(now())
+  resolvedAt  DateTime?
+  updatedAt   DateTime            @updatedAt
+
+  @@index([smartBinId, status])
+  @@index([level, status])
+  @@map("smart_bin_alerts")
 }
 
 model WasteReport {
