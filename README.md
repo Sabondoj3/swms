@@ -79,5 +79,8 @@ bcrypt-12, Zod server validation, RBAC (middleware + API guards), protected rout
 - Uploads 404 → `public/uploads/.gitkeep` exists; set `UPLOAD_DIR`.
 - Build prerender DB error → pages are `force-dynamic`; ensure DB reachable for `seed` but not required for `build`.
 
+## Smart-bin IoT integration
+The `feature/smart-bin-iot` branch adds registered ESP32/JSN-SR04T smart bins, hashed device tokens, calibrated real-reading ingestion at `/api/smart-bins/readings`, historical readings, threshold-transition alerts, offline/stale states, an admin dashboard at `/admin/smart-bins`, an additive Prisma migration, firmware, and setup documentation. Physical acceptance still requires connecting the actual ESP32 and sensor; software-only or simulated values must not be presented as live hardware data. See `docs/SMART_BINS.md` and `firmware/swms_smart_bin.ino`.
+
 ## Future (architected, not in MVP)
-IoT fill sensors, vehicle GPS, AI image classification (plug `AI_CLASSIFY_API_URL/KEY`), route optimization, push/WhatsApp/SMS, multi-org/city, carbon reports, native apps, PDF export.
+Vehicle GPS, AI image classification (plug `AI_CLASSIFY_API_URL/KEY`), route optimization, push/WhatsApp/SMS, multi-org/city, carbon reports, native apps, PDF export.
