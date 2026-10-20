@@ -11,6 +11,7 @@ export default function CollectorPage() {
   const [earnings, setEarnings] = useState({ total: 0, count: 0 });
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
+  const [celebration, setCelebration] = useState<{ title: string; message: string } | null>(null);
 
   async function load() {
     const r = await fetch("/api/reports").then((x) => x.json()).catch(() => ({ reports: [] }));
@@ -36,7 +37,10 @@ export default function CollectorPage() {
     const data = await res.json();
     if (!res.ok) { setMsg(data.error ?? "Update failed"); return; }
     setMsg(`${id.slice(0, 6)} → ${status}`);
-    load();
+    if (status === "COLLECTED") {
+      setCelebration({ title: "Great work, Collector!", message: "You have successfully collected this waste and helped keep the community cleaner. An administrator will verify the collection and record your SLE50 payment." });
+    }
+    await load();
   }
 
   return (
@@ -82,6 +86,7 @@ export default function CollectorPage() {
           {jobs.length === 0 ? <p className="text-sm text-slate-500">No jobs assigned.</p> : null}
         </div>
       </main>
+      {celebration ? <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 px-4" role="dialog" aria-modal="true" aria-labelledby="collector-celebration-title"><div className="w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl"><div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-100 text-3xl" aria-hidden="true">✓</div><h2 id="collector-celebration-title" className="mt-4 text-2xl font-extrabold text-slate-900">{celebration.title}</h2><p className="mt-3 text-sm leading-6 text-slate-600">{celebration.message}</p><button type="button" onClick={() => setCelebration(null)} className="mt-6 w-full rounded-xl bg-green-600 px-5 py-3 font-semibold text-white transition hover:bg-green-700">Continue to today&apos;s jobs</button></div></div> : null}
       <MobileNav />
     </div>
   );
