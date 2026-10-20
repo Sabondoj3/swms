@@ -18,7 +18,6 @@ type ProfileUser = {
   phone: string | null;
   role: string;
   institution: string | null;
-  studentId: string | null;
   profileImage: string | null;
   points: number;
   isActive: boolean;
@@ -49,7 +48,6 @@ export default function ProfilePage() {
     fullName: "",
     phone: "",
     institution: "",
-    studentId: "",
     profileImage: "",
   });
 
@@ -70,7 +68,6 @@ export default function ProfilePage() {
           fullName: data.user.fullName ?? "",
           phone: data.user.phone ?? "",
           institution: data.user.institution ?? "",
-          studentId: data.user.studentId ?? "",
           profileImage: data.user.profileImage ?? "",
         });
       } catch {
@@ -429,7 +426,7 @@ export default function ProfilePage() {
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Update your contact and institution details.
+            Update your contact and civic locality details.
           </p>
 
           {message && (
@@ -499,7 +496,7 @@ export default function ProfilePage() {
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Institution
+                City, district, or locality
               </label>
 
               <input
@@ -510,25 +507,7 @@ export default function ProfilePage() {
                     institution: event.target.value,
                   }))
                 }
-                placeholder="Enter institution"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Student ID
-              </label>
-
-              <input
-                value={form.studentId}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    studentId: event.target.value,
-                  }))
-                }
-                placeholder="Enter student ID"
+                placeholder="Enter city, district, or locality"
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </div>

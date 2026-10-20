@@ -131,14 +131,16 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  reports          WasteReport[]         @relation("Reporter")
-  assignments      CollectorAssignment[] @relation("Collector")
-  assignedByMe     CollectorAssignment[] @relation("Assigner")
-  notifications    Notification[]
-  statusChanges    ReportStatusHistory[] @relation("ChangedBy")
-  badges           UserBadge[]
-  auditLogs        AuditLog[]            @relation("Actor")
-  educationalPosts EducationalPost[]     @relation("Author")
+  reports           WasteReport[]         @relation("Reporter")
+  assignments       CollectorAssignment[] @relation("Collector")
+  assignedByMe      CollectorAssignment[] @relation("Assigner")
+  notifications     Notification[]
+  statusChanges     ReportStatusHistory[] @relation("ChangedBy")
+  badges            UserBadge[]
+  collectorPayments CollectorPayment[]    @relation("CollectorPayments")
+  confirmedPayments CollectorPayment[]    @relation("ConfirmedPayments")
+  auditLogs         AuditLog[]            @relation("Actor")
+  educationalPosts  EducationalPost[]     @relation("Author")
 
   @@index([role])
   @@index([email])
@@ -274,10 +276,11 @@ model WasteReport {
   updatedAt         DateTime          @updatedAt
   completedAt       DateTime?
 
-  images        ReportImage[]
-  assignments   CollectorAssignment[]
-  history       ReportStatusHistory[]
-  notifications Notification[]
+  images           ReportImage[]
+  assignments      CollectorAssignment[]
+  history          ReportStatusHistory[]
+  notifications    Notification[]
+  collectorPayment CollectorPayment?
 
   @@index([reporterId])
   @@index([collectionPointId])
@@ -318,6 +321,25 @@ model CollectorAssignment {
   @@index([collectorId])
   @@index([status])
   @@map("collector_assignments")
+}
+
+model CollectorPayment {
+  id            String      @id @default(uuid())
+  reportId      String      @unique
+  report        WasteReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  collectorId   String
+  collector     User        @relation("CollectorPayments", fields: [collectorId], references: [id], onDelete: Cascade)
+  amount        Int         @default(50)
+  currency      String      @default("SLE")
+  status        String      @default("RECORDED")
+  confirmedById String?
+  confirmedBy   User?       @relation("ConfirmedPayments", fields: [confirmedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+  confirmedAt   DateTime    @default(now())
+
+  @@index([collectorId, createdAt])
+  @@index([status])
+  @@map("collector_payments")
 }
 
 model Notification {

@@ -13,7 +13,7 @@ import {
   LayoutDashboard,
   QrCode,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 export function TopBar() {
   const { data } = useSession();
@@ -105,18 +105,15 @@ export function TopBar() {
               >
                 Dashboard
               </Link>
+              <button type="button" onClick={() => signOut({ callbackUrl: "/login" })} className="rounded-lg border border-slate-200 px-3 py-2 font-semibold text-slate-700 hover:border-red-200 hover:text-red-700">
+                Log out
+              </button>
             </>
           )}
         </nav>
 
         {data?.user ? (
-          <Link
-            href="/notifications"
-            className="rounded-lg border p-2 md:hidden"
-            aria-label="Notifications"
-          >
-            <Bell size={18} />
-          </Link>
+          <div className="flex items-center gap-2 md:hidden"><Link href="/notifications" className="rounded-lg border p-2" aria-label="Notifications"><Bell size={18} /></Link><button type="button" onClick={() => signOut({ callbackUrl: "/login" })} className="rounded-lg border px-2 py-1 text-xs font-semibold text-red-700" aria-label="Log out">Log out</button></div>
         ) : (
           <Link
             href="/login"
@@ -283,7 +280,7 @@ export function Footer() {
 
           <div className="mt-2 flex flex-col gap-1 text-sm text-slate-600">
             <Link href="/dashboard">
-              Students
+              Citizens
             </Link>
 
             <Link href="/collector">
