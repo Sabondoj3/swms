@@ -4,7 +4,7 @@ import { Card, Button, SecondaryButton } from "@/components/ui/primitives";
 import { PriorityBadge, StatusBadge } from "@/components/reports/badges";
 import { TopBar, MobileNav } from "@/components/layout/nav";
 
-type Report = { id: string; reportNumber: string; address: string; wasteCategory: string; priority: string; status: string; createdAt: string; images: { imageUrl: string }[] };
+type Report = { id: string; reportNumber: string; address: string; wasteCategory: string; problemType: string; priority: string; status: string; createdAt: string; description: string | null; images: { imageUrl: string }[]; reporter: { fullName: string; email: string; phone: string | null } };
 
 export default function CollectorPage() {
   const [jobs, setJobs] = useState<Report[]>([]);
@@ -47,13 +47,18 @@ export default function CollectorPage() {
             <Card key={j.id}>
               <div className="flex gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={j.images[0]?.imageUrl ?? "/placeholder-waste.jpg"} alt="" className="h-20 w-20 rounded-xl object-cover" />
+                <img src={j.images[0]?.imageUrl ?? "/placeholder-waste.jpg"} alt="Reported waste" className="h-20 w-20 rounded-xl object-cover" />
                 <div className="flex-1">
                   <p className="font-mono text-sm font-bold">{j.reportNumber}</p>
-                  <p className="text-xs text-slate-500">{j.address} • {j.wasteCategory}</p>
+                  <p className="text-xs text-slate-500">{j.address} • {j.wasteCategory} • {j.problemType.replaceAll("_", " ").toLowerCase()}</p>
                   <div className="mt-1 flex gap-1"><PriorityBadge priority={j.priority} /><StatusBadge status={j.status} /></div>
                 </div>
               </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl bg-slate-50 p-3 text-sm"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">Reporter contact</p><p className="mt-1 font-semibold text-slate-900">{j.reporter?.fullName ?? "Community reporter"}</p>{j.reporter?.phone ? <a href={`tel:${j.reporter.phone}`} className="mt-1 inline-flex font-semibold text-green-700 hover:underline">Call {j.reporter.phone}</a> : <p className="mt-1 text-xs text-slate-500">No phone number provided</p>}<p className="mt-1 text-xs text-slate-500">{j.reporter?.email}</p></div>
+                <div className="rounded-xl bg-amber-50 p-3 text-sm"><p className="text-xs font-bold uppercase tracking-wide text-amber-800">Reporter&apos;s comment</p><p className="mt-1 leading-5 text-amber-950">{j.description || "No additional comment was provided."}</p></div>
+              </div>
+              {j.images.length > 0 ? <div className="mt-3"><p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Evidence photos</p><div className="flex flex-wrap gap-2">{j.images.map((image, index) => <a key={image.imageUrl} href={image.imageUrl} target="_blank" rel="noreferrer" title="Open full-size evidence photo"><img src={image.imageUrl} alt={`Waste evidence ${index + 1}`} className="h-24 w-24 rounded-xl border object-cover transition hover:scale-105 hover:ring-2 hover:ring-green-500" /></a>)}</div></div> : <p className="mt-3 text-xs text-slate-500">No evidence photo was uploaded.</p>}
               <div className="mt-3 grid gap-2">
                 <textarea placeholder="Collection notes…" value={notes[j.id] ?? ""} onChange={(e) => setNotes({ ...notes, [j.id]: e.target.value })} className="w-full rounded-xl border px-3 py-2 text-sm" rows={2} />
                 <div className="flex flex-wrap gap-2 text-xs">
