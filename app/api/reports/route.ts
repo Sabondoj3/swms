@@ -34,7 +34,7 @@ export async function GET(req: Request) {
     if (q) where.OR = [{ reportNumber: { contains: q, mode: "insensitive" } }, { address: { contains: q, mode: "insensitive" } }];
     const reports = await prisma.wasteReport.findMany({
       where: where as never,
-      include: { images: true, collectionPoint: true, reporter: { select: { fullName: true, email: true } }, assignments: { include: { collector: { select: { fullName: true } } } } },
+      include: { images: true, collectionPoint: true, reporter: { select: { fullName: true, email: true, phone: true } }, assignments: { include: { collector: { select: { fullName: true } } } } },
       orderBy: { createdAt: "desc" },
       take: 100,
     });
