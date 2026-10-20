@@ -40,4 +40,18 @@ Finally verify:
 npx prisma migrate status
 ```
 
-The application build runs `prisma migrate deploy`, so after this one-time baseline procedure future deployments can use the normal build safely.
+The Netlify application build intentionally does not run migrations. This prevents a build from failing before the production database has been baselined. After the one-time baseline procedure, apply pending migrations explicitly with:
+
+```bash
+npm run db:migrate
+```
+
+The five migration folder names currently in this repository are:
+
+```text
+00000000000000_baseline
+20261017000000_add_smart_bins
+20261020140000_add_collector_payments
+20261020150000_add_push_subscriptions
+20261020160000_add_collector_rates
+```
