@@ -139,6 +139,7 @@ model User {
   badges            UserBadge[]
   collectorPayments CollectorPayment[]    @relation("CollectorPayments")
   confirmedPayments CollectorPayment[]    @relation("ConfirmedPayments")
+  pushSubscriptions PushSubscription[]
   auditLogs         AuditLog[]            @relation("Actor")
   educationalPosts  EducationalPost[]     @relation("Author")
 
@@ -340,6 +341,20 @@ model CollectorPayment {
   @@index([collectorId, createdAt])
   @@index([status])
   @@map("collector_payments")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 model Notification {
