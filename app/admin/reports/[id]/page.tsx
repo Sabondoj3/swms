@@ -11,6 +11,7 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
   const [priority, setPriority] = useState("");
   const [comment, setComment] = useState("");
   const [msg, setMsg] = useState("");
+  const [confirmationPopup, setConfirmationPopup] = useState<{ message: string; amount: number; currency: string } | null>(null);
 
   async function load() {
     const r = await fetch(`/api/reports/${params.id}`).then((x) => x.json()).catch(() => null);
@@ -28,10 +29,10 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
   }
   async function confirmCollection() {
     if (!comment.trim()) { setMsg("Add a confirmation comment before approving this collection."); return; }
-    const res = await fetch(`/api/reports/${params.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "COMPLETED", comment: comment.trim() }) });
+    const res = await fetch(`/api/reports/${params.id}/confirm`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ comment: comment.trim() }) });
     const d = await res.json();
     if (!res.ok) setMsg(d.error ?? "Confirmation failed");
-    else { setMsg("Collection confirmed and SLE50 payment recorded"); load(); }
+    else { setMsg(d.message ?? "Collection confirmed and payment recorded"); setConfirmationPopup({ message: d.message ?? "Collection confirmed and payment recorded", amount: d.payment?.amount ?? 50, currency: d.payment?.currency ?? "SLE" }); load(); }
   }
   async function assign() {
     const res = await fetch(`/api/reports/${params.id}/assign`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reportId: params.id, collectorId }) });
@@ -66,7 +67,7 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
         </div>
         <Button onClick={saveStatus} className="mt-3">Save status</Button>
       </Card>
-      {report.status === "COLLECTED" || (report.status === "COMPLETED" && !report.collectorPayment) ? <Card className="mt-4 border-green-200 bg-green-50"><p className="font-bold text-green-900">{report.status === "COLLECTED" ? "Collection awaiting confirmation" : "Payment record needs repair"}</p><p className="mt-1 text-sm text-green-800">Review the evidence, add a confirmation comment, then confirm. The system will ensure this report has one SLE50 payment record for the assigned collector.</p><Button onClick={confirmCollection} className="mt-3 bg-green-700">{report.status === "COLLECTED" ? "Confirm collection and record SLE50" : "Repair SLE50 payment record"}</Button></Card> : null}
+      {report.status === "COLLECTED" || (report.status === "COMPLETED" && !report.collectorPayment) ? <Card className="mt-4 border-green-200 bg-green-50"><p className="font-bold text-green-900">{report.status === "COLLECTED" ? "Collection awaiting confirmation" : "Payment record needs repair"}</p><p className="mt-1 text-sm text-green-800">Review the evidence, add a confirmation comment, then confirm. The system will ensure this report has one configured payment record for the assigned collector.</p><Button onClick={confirmCollection} className="mt-3 bg-green-700">{report.status === "COLLECTED" ? "Confirm collection and assign payment" : "Repair payment record"}</Button></Card> : null}
       <Card className="mt-4">
         <p className="font-bold">Assign collector</p>
         <div className="mt-2 flex flex-col gap-2">
@@ -76,6 +77,7 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
       </Card>
       <h2 className="mt-6 font-bold">History</h2>
       <div className="mt-2 grid gap-2">{report.history.map((h) => <Card key={h.id}><p className="text-xs font-bold">{h.oldStatus ?? "â€”"} â†’ {h.newStatus}</p><p className="text-xs text-slate-500">{h.comment}</p></Card>)}</div>
+      {confirmationPopup ? <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 px-4" role="dialog" aria-modal="true" aria-labelledby="admin-confirmation-title"><div className="w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl"><div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-100 text-3xl text-green-700" aria-hidden="true">✓</div><h2 id="admin-confirmation-title" className="mt-4 text-2xl font-extrabold text-slate-900">Collection confirmed</h2><p className="mt-3 text-sm leading-6 text-slate-600">{confirmationPopup.message}. The payment is now visible in the collector&apos;s dashboard.</p><p className="mt-3 text-3xl font-extrabold text-green-700">{confirmationPopup.currency}{confirmationPopup.amount}</p><button type="button" onClick={() => setConfirmationPopup(null)} className="mt-6 w-full rounded-xl bg-green-600 px-5 py-3 font-semibold text-white transition hover:bg-green-700">Continue</button></div></div> : null}
     </main>
   );
 }
