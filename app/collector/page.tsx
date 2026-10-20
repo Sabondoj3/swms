@@ -19,13 +19,14 @@ export default function CollectorPage() {
     const e = await fetch("/api/collector/earnings").then((x) => x.json()).catch(() => ({ total: 0, count: 0 }));
     setEarnings({ total: e.total ?? 0, count: e.count ?? 0 });
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); const timer = window.setInterval(load, 15000); return () => window.clearInterval(timer); }, []);
 
   async function update(id: string, status: string) {
     setMsg("");
     let completionPhoto: string | undefined;
     const fileInput = document.getElementById(`photo-${id}`) as HTMLInputElement | null;
     const file = fileInput?.files?.[0];
+    if (status === "COLLECTED" && !file) { setMsg("Please upload collection evidence before marking this job collected."); return; }
     if (file && (status === "COLLECTED" || status === "COMPLETED")) {
       const fd = new FormData(); fd.append("file", file);
       const up = await fetch("/api/upload", { method: "POST", body: fd });
