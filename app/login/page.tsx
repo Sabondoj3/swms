@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, Input, Label, Card } from "@/components/ui/primitives";
 import { ROLE_HOME } from "@/lib/constants";
+import CommunityReporterForm from "./CommunityReporterForm";
 
 type LoginRole = "ADMIN" | "COLLECTOR" | "PUBLIC";
 type RoleOption = { value: LoginRole; label: string; eyebrow: string; description: string; destination: string };
@@ -73,16 +74,17 @@ function LoginForm() {
             </div>
           </section>
           <Card className="bg-white p-6 shadow-sm md:p-8">
-            <div className="border-b border-slate-100 pb-5"><p className="text-sm font-semibold text-green-700">{selected.eyebrow}</p><h2 className="mt-1 text-2xl font-extrabold">{selected.label} login</h2><p className="mt-1 text-sm text-slate-500">Continue to {selected.destination}</p></div>
-            <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
-              {params.get("registered") ? <p className="rounded-lg bg-green-50 p-3 text-sm text-green-800">Your citizen account is ready. Sign in below.</p> : null}
-              {err ? <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{err}</p> : null}
-              <div><Label>Email address</Label><Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={role === "PUBLIC" ? "you@campus.edu" : `${selected.label.toLowerCase()}@swms.local`} /></div>
-              <div><Label>Password</Label><div className="relative"><Input type={show ? "text" : "password"} required autoComplete={remember ? "current-password" : "off"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" /><button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-3 text-xs font-semibold text-green-700">{show ? "Hide" : "Show"}</button></div></div>
-              <label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label>
-              <Button disabled={loading}>{loading ? "Signing in…" : `Sign in as ${selected.label}`}</Button>
-            </form>
-            {role === "PUBLIC" ? <p className="mt-5 text-center text-sm text-slate-600">No citizen account? <Link href="/register" className="font-semibold text-green-700">Create one</Link></p> : <p className="mt-5 text-center text-xs text-slate-500">Admin and collector accounts are issued by an authorized SWMS administrator.</p>}
+            <div className="border-b border-slate-100 pb-5"><p className="text-sm font-semibold text-green-700">{selected.eyebrow}</p><h2 className="mt-1 text-2xl font-extrabold">{role === "PUBLIC" ? "Start community reporting" : `${selected.label} login`}</h2><p className="mt-1 text-sm text-slate-500">{role === "PUBLIC" ? "Share your contact information, then report waste." : `Continue to ${selected.destination}`}</p></div>
+            {role === "PUBLIC" ? <CommunityReporterForm /> : <>
+              <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
+                {err ? <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{err}</p> : null}
+                <div><Label>Email address</Label><Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={`${selected.label.toLowerCase()}@swms.local`} /></div>
+                <div><Label>Password</Label><div className="relative"><Input type={show ? "text" : "password"} required autoComplete={remember ? "current-password" : "off"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" /><button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-3 text-xs font-semibold text-green-700">{show ? "Hide" : "Show"}</button></div></div>
+                <label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label>
+                <Button disabled={loading}>{loading ? "Signing in…" : `Sign in as ${selected.label}`}</Button>
+              </form>
+              <p className="mt-5 text-center text-xs text-slate-500">Admin and collector accounts are issued by an authorized SWMS administrator.</p>
+            </>}
           </Card>
         </div>
       </div>

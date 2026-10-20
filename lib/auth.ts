@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { audit } from "./audit";
+import { verifyCommunityAccessToken } from "./community-access";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
@@ -30,6 +31,19 @@ export const authOptions: NextAuthOptions = {
         const ok = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!ok) return null;
         await audit({ actorId: user.id, action: "LOGIN", entity: "User", entityId: user.id }).catch(() => {});
+        return { id: user.id, name: user.fullName, email: user.email, role: user.role } as never;
+      },
+    }),
+    CredentialsProvider({
+      id: "community",
+      name: "Community reporting",
+      credentials: { token: { label: "Community access token", type: "text" } },
+      async authorize(credentials) {
+        const claims = credentials?.token ? verifyCommunityAccessToken(credentials.token) : null;
+        if (!claims) return null;
+        const user = await prisma.user.findUnique({ where: { id: claims.sub } });
+        if (!user || !user.isActive || user.role !== "PUBLIC") return null;
+        await audit({ actorId: user.id, action: "COMMUNITY_REPORTING_STARTED", entity: "User", entityId: user.id }).catch(() => {});
         return { id: user.id, name: user.fullName, email: user.email, role: user.role } as never;
       },
     }),
