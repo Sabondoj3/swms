@@ -27,17 +27,17 @@ export default function Home() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href="/report"
+                href="/onboarding/1"
                 className="rounded-xl bg-white px-6 py-3 font-semibold text-green-700"
               >
-                Report Waste
+                Start the journey
               </Link>
 
               <Link
-                href="/#how"
+                href="/onboarding/1"
                 className="rounded-xl border border-white/40 px-6 py-3 font-semibold"
               >
-                Learn More
+                Learn how it works
               </Link>
 
               <InstallAppButton />
@@ -184,7 +184,7 @@ export default function Home() {
 
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <Link
-                href="/register"
+                href="/onboarding/1"
                 className="rounded-xl bg-white px-5 py-3 font-semibold text-green-700"
               >
                 Get Started
