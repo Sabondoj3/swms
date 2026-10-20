@@ -26,6 +26,13 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
     if (!res.ok) setMsg(d.error ?? "Failed");
     else { setMsg(`Updated to ${status}`); load(); }
   }
+  async function confirmCollection() {
+    if (!comment.trim()) { setMsg("Add a confirmation comment before approving this collection."); return; }
+    const res = await fetch(`/api/reports/${params.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "COMPLETED", comment: comment.trim() }) });
+    const d = await res.json();
+    if (!res.ok) setMsg(d.error ?? "Confirmation failed");
+    else { setMsg("Collection confirmed and SLE50 payment recorded"); load(); }
+  }
   async function assign() {
     const res = await fetch(`/api/reports/${params.id}/assign`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reportId: params.id, collectorId }) });
     const d = await res.json();
@@ -59,6 +66,7 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
         </div>
         <Button onClick={saveStatus} className="mt-3">Save status</Button>
       </Card>
+      {report.status === "COLLECTED" ? <Card className="mt-4 border-green-200 bg-green-50"><p className="font-bold text-green-900">Collection awaiting confirmation</p><p className="mt-1 text-sm text-green-800">Review the uploaded evidence above, add a confirmation comment, then confirm. This changes the report to Completed and immediately records SLE50 for the assigned collector.</p><Button onClick={confirmCollection} className="mt-3 bg-green-700">Confirm collection and record SLE50</Button></Card> : null}
       <Card className="mt-4">
         <p className="font-bold">Assign collector</p>
         <div className="mt-2 flex flex-col gap-2">
@@ -71,4 +79,3 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
     </main>
   );
 }
-
