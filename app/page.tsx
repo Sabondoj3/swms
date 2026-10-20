@@ -8,8 +8,11 @@ export default function Home() {
       <TopBar />
 
       <main>
-        <section className="bg-gradient-to-b from-green-700 to-green-600 text-white">
-          <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+        <section className="relative isolate overflow-hidden bg-green-950 text-white">
+          <img src="/hero-community-cleanup.jpg" alt="Community members collecting waste outdoors" className="absolute inset-0 -z-20 h-full w-full object-cover object-center" />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-green-950/95 via-green-900/80 to-green-900/45" />
+          <div className="absolute inset-0 -z-10 bg-green-800/25 mix-blend-multiply" />
+          <div className="relative mx-auto max-w-6xl px-4 py-14 md:py-20">
             <p className="text-sm font-semibold uppercase tracking-widest text-green-100">
               Smart Waste Management System
             </p>
