@@ -4,7 +4,7 @@ import { Card, Button, SecondaryButton } from "@/components/ui/primitives";
 import { StatusBadge, PriorityBadge, Timeline } from "@/components/reports/badges";
 
 export default function AdminReportDetail({ params }: { params: { id: string } }) {
-  const [report, setReport] = useState<{ id: string; reportNumber: string; address: string; status: string; priority: string; wasteCategory: string; problemType: string; description: string; images: { imageUrl: string; type: string }[]; history: { id: string; oldStatus: string; newStatus: string; comment: string; createdAt: string }[] } | null>(null);
+  const [report, setReport] = useState<{ id: string; reportNumber: string; address: string; status: string; priority: string; wasteCategory: string; problemType: string; description: string; images: { imageUrl: string; type: string }[]; collectorPayment: { id: string; amount: number; currency: string } | null; history: { id: string; oldStatus: string; newStatus: string; comment: string; createdAt: string }[] } | null>(null);
   const [collectors, setCollectors] = useState<{ id: string; fullName: string; activeJobs: number }[]>([]);
   const [collectorId, setCollectorId] = useState("");
   const [status, setStatus] = useState("");
@@ -66,7 +66,7 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
         </div>
         <Button onClick={saveStatus} className="mt-3">Save status</Button>
       </Card>
-      {report.status === "COLLECTED" ? <Card className="mt-4 border-green-200 bg-green-50"><p className="font-bold text-green-900">Collection awaiting confirmation</p><p className="mt-1 text-sm text-green-800">Review the uploaded evidence above, add a confirmation comment, then confirm. This changes the report to Completed and immediately records SLE50 for the assigned collector.</p><Button onClick={confirmCollection} className="mt-3 bg-green-700">Confirm collection and record SLE50</Button></Card> : null}
+      {report.status === "COLLECTED" || (report.status === "COMPLETED" && !report.collectorPayment) ? <Card className="mt-4 border-green-200 bg-green-50"><p className="font-bold text-green-900">{report.status === "COLLECTED" ? "Collection awaiting confirmation" : "Payment record needs repair"}</p><p className="mt-1 text-sm text-green-800">Review the evidence, add a confirmation comment, then confirm. The system will ensure this report has one SLE50 payment record for the assigned collector.</p><Button onClick={confirmCollection} className="mt-3 bg-green-700">{report.status === "COLLECTED" ? "Confirm collection and record SLE50" : "Repair SLE50 payment record"}</Button></Card> : null}
       <Card className="mt-4">
         <p className="font-bold">Assign collector</p>
         <div className="mt-2 flex flex-col gap-2">
