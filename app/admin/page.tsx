@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/primitives";
 import { TopBar, MobileNav } from "@/components/layout/nav";
 import CollectorAccountPanel from "./CollectorAccountPanel";
+import PaymentRatesPanel from "./PaymentRatesPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function AdminHome() {
           {[['Reports', '/admin/reports'], ['Smart bins', '/admin/smart-bins'], ['Points & QR', '/admin/points'], ['Users & collectors', '/admin/users'], ['Analytics', '/admin/analytics'], ['Education', '/admin/education'], ['Audit logs', '/admin/audit'], ['Export CSV', '/api/export'], ['Live map', '/points']].map(([l, h]) => <Link key={l} href={h} className="rounded-2xl border bg-white p-4 font-semibold shadow-sm hover:border-green-300">{l} →</Link>)}
         </div>
         <CollectorAccountPanel />
+        <PaymentRatesPanel />
         <h2 className="mt-8 font-bold">Recent activity</h2>
         <div className="mt-3 grid gap-2">
           {recent.map((r) => <Link key={r.id} href={`/admin/reports/${r.id}`}><Card className="flex justify-between text-sm"><span className="font-mono font-bold">{r.reportNumber}</span><span className="text-slate-500">{(r.reporter as unknown as { fullName: string }).fullName} • {r.status}</span></Card></Link>)}
