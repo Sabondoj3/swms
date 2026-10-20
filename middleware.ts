@@ -16,14 +16,23 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
   const role = (token as Record<string, unknown>).role as string | undefined;
-  if (pathname.startsWith("/admin") && role !== "ADMIN" && role !== "SUPER_ADMIN") {
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  const isCollector = role === "COLLECTOR";
+  const isCitizen = role === "PUBLIC";
+  if (pathname.startsWith("/admin") && !isAdmin) {
+    const url = req.nextUrl.clone();
+    url.pathname = isCollector ? "/collector" : "/dashboard";
+    return NextResponse.redirect(url);
+  }
+  if (pathname.startsWith("/collector") && !isCollector && !isAdmin) {
     const url = req.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
-  if (pathname.startsWith("/collector") && role !== "COLLECTOR" && role !== "ADMIN" && role !== "SUPER_ADMIN") {
+  const citizenPaths = ["/dashboard", "/report", "/reports", "/my-reports", "/scan"];
+  if (citizenPaths.some((path) => pathname === path || pathname.startsWith(path + "/")) && !isCitizen && !isAdmin) {
     const url = req.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = isCollector ? "/collector" : "/login";
     return NextResponse.redirect(url);
   }
   return NextResponse.next();

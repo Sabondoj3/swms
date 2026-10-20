@@ -10,12 +10,23 @@ export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
-      credentials: { email: { label: "Email", type: "email" }, password: { label: "Password", type: "password" } },
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+        workflowRole: { label: "Workflow role", type: "text" },
+      },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password || !credentials.workflowRole) return null;
         const email = credentials.email.toLowerCase().trim();
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !user.isActive) return null;
+        const requestedRole = credentials.workflowRole.toUpperCase();
+        const roleMatches = requestedRole === "ADMIN"
+          ? user.role === "ADMIN" || user.role === "SUPER_ADMIN"
+          : requestedRole === "COLLECTOR"
+            ? user.role === "COLLECTOR"
+            : requestedRole === "PUBLIC" && user.role === "PUBLIC";
+        if (!roleMatches) return null;
         const ok = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!ok) return null;
         await audit({ actorId: user.id, action: "LOGIN", entity: "User", entityId: user.id }).catch(() => {});
