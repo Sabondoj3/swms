@@ -62,7 +62,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       if (!(parsed.data.status === "CANCELLED" && report.reporterId === me.id)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     if (isCollector) {
-      const allowedCollector = ["ACCEPTED", "ON_THE_WAY", "COLLECTED", "COMPLETED"];
+      const allowedCollector = ["ACCEPTED", "ON_THE_WAY", "COLLECTED"];
       if (!allowedCollector.includes(parsed.data.status)) return NextResponse.json({ error: "Collectors can only progress assigned jobs" }, { status: 403 });
       if (!activeAssign && report.reporterId !== me.id) return NextResponse.json({ error: "Not your assignment" }, { status: 403 });
     }
@@ -110,6 +110,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
     if (parsed.data.status === "COLLECTED" || parsed.data.status === "ON_THE_WAY") {
       await notifyUser({ userId: report.reporterId, title: "Collection update", message: `${report.reportNumber} is ${parsed.data.status.replace(/_/g, " ").toLowerCase()}`, type: "COLLECTION_STARTED", reportId: report.id, link: `/reports/${report.id}` });
+    }
+    if (isAdmin && report.status === "COLLECTED" && parsed.data.status === "COMPLETED") {
+      const assignment = await prisma.collectorAssignment.findFirst({ where: { reportId: report.id }, orderBy: { assignedAt: "desc" } });
+      if (assignment) {
+        await prisma.collectorPayment.upsert({
+          where: { reportId: report.id },
+          create: { reportId: report.id, collectorId: assignment.collectorId, amount: 50, currency: "SLE", status: "RECORDED", confirmedById: me.id },
+          update: { collectorId: assignment.collectorId, amount: 50, currency: "SLE", status: "RECORDED", confirmedById: me.id, confirmedAt: new Date() },
+        });
+        await notifyUser({ userId: assignment.collectorId, title: "Collection payment recorded", message: `${report.reportNumber} confirmed complete — SLE50 recorded`, type: "SYSTEM", reportId: report.id, link: "/collector" });
+        await audit({ actorId: me.id, action: "PAYMENT_RECORDED", entity: "CollectorPayment", entityId: report.id, metadata: { collectorId: assignment.collectorId, amount: 50, currency: "SLE" } });
+      }
     }
 
     await audit({ actorId: me.id, action: `REPORT_${parsed.data.status}`, entity: "WasteReport", entityId: report.id });

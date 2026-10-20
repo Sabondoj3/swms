@@ -7,7 +7,6 @@ export const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters").regex(/[A-Z]/, "Must contain uppercase").regex(/[a-z]/, "Must contain lowercase").regex(/[0-9]/, "Must contain a number"),
   confirmPassword: z.string(),
   institution: z.string().max(120).optional().or(z.literal("")),
-  studentId: z.string().max(50).optional().or(z.literal("")),
   terms: z.literal(true, { errorMap: () => ({ message: "You must accept the terms" }) }),
 }).refine((d) => d.password === d.confirmPassword, { message: "Passwords do not match", path: ["confirmPassword"] });
 

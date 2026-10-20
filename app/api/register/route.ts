@@ -13,13 +13,13 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = registerSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
-    const { fullName, email, phone, password, institution, studentId } = parsed.data;
+    const { fullName, email, phone, password, institution } = parsed.data;
     const normalized = email.toLowerCase().trim();
     const exists = await prisma.user.findUnique({ where: { email: normalized } });
     if (exists) return NextResponse.json({ error: "Email already registered" }, { status: 409 });
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { fullName: fullName.trim(), email: normalized, phone: phone || null, passwordHash, institution: institution || null, studentId: studentId || null, role: "PUBLIC" },
+      data: { fullName: fullName.trim(), email: normalized, phone: phone || null, passwordHash, institution: institution || null, role: "PUBLIC" },
       select: { id: true, email: true, fullName: true },
     });
     await audit({ actorId: user.id, action: "REGISTER", entity: "User", entityId: user.id });

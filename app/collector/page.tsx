@@ -8,12 +8,15 @@ type Report = { id: string; reportNumber: string; address: string; wasteCategory
 
 export default function CollectorPage() {
   const [jobs, setJobs] = useState<Report[]>([]);
+  const [earnings, setEarnings] = useState({ total: 0, count: 0 });
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
 
   async function load() {
     const r = await fetch("/api/reports").then((x) => x.json()).catch(() => ({ reports: [] }));
     setJobs(r.reports ?? []);
+    const e = await fetch("/api/collector/earnings").then((x) => x.json()).catch(() => ({ total: 0, count: 0 }));
+    setEarnings({ total: e.total ?? 0, count: e.count ?? 0 });
   }
   useEffect(() => { load(); }, []);
 
@@ -41,6 +44,7 @@ export default function CollectorPage() {
       <TopBar />
       <main className="mx-auto max-w-3xl px-4 py-6">
         <h1 className="text-xl font-extrabold">Today&apos;s Jobs ({jobs.length})</h1>
+        <Card className="mt-3 border-green-200 bg-green-50"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wide text-green-800">Recorded earnings</p><p className="mt-1 text-2xl font-extrabold text-green-900">SLE{earnings.total}</p></div><p className="text-right text-sm text-green-800">{earnings.count} confirmed collection{earnings.count === 1 ? "" : "s"}<br /><span className="text-xs">SLE50 per admin-confirmed job</span></p></div></Card>
         {msg ? <p className="mt-2 rounded-lg bg-green-50 p-3 text-sm text-green-800">{msg}</p> : null}
         <div className="mt-4 grid gap-3">
           {jobs.map((j) => (
@@ -69,7 +73,7 @@ export default function CollectorPage() {
                   <SecondaryButton onClick={() => update(j.id, "ACCEPTED")}>Accept</SecondaryButton>
                   <SecondaryButton onClick={() => update(j.id, "ON_THE_WAY")}>On the way</SecondaryButton>
                   <Button onClick={() => update(j.id, "COLLECTED")}>Mark collected</Button>
-                  <Button onClick={() => update(j.id, "COMPLETED")} className="bg-emerald-700">Complete</Button>
+                  <span className="rounded-xl bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">Admin confirms completion and records SLE50</span>
                   <a href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(j.address)}`} target="_blank" className="rounded-xl border px-4 py-3 text-sm font-semibold">Navigate</a>
                 </div>
               </div>

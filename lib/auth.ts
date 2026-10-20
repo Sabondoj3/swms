@@ -6,7 +6,7 @@ import { audit } from "./audit";
 import { verifyCommunityAccessToken } from "./community-access";
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  session: { strategy: "jwt", maxAge: 8 * 60 * 60, updateAge: 0 },
   pages: { signIn: "/login", error: "/login" },
   providers: [
     CredentialsProvider({

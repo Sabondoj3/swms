@@ -26,7 +26,6 @@ export async function GET() {
       phone: true,
       role: true,
       institution: true,
-      studentId: true,
       profileImage: true,
       points: true,
       isActive: true,
@@ -86,11 +85,6 @@ export async function PATCH(request: Request) {
       ? body.institution.trim()
       : undefined;
 
-  const studentId =
-    typeof body.studentId === "string"
-      ? body.studentId.trim()
-      : undefined;
-
   const profileImage =
     typeof body.profileImage === "string"
       ? body.profileImage.trim()
@@ -109,7 +103,6 @@ export async function PATCH(request: Request) {
       fullName,
       phone: phone || null,
       institution: institution || null,
-      studentId: studentId || null,
       profileImage: profileImage || null,
     },
     select: {
@@ -119,7 +112,6 @@ export async function PATCH(request: Request) {
       phone: true,
       role: true,
       institution: true,
-      studentId: true,
       profileImage: true,
       points: true,
       isActive: true,

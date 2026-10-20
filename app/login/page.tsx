@@ -25,7 +25,6 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [remember, setRemember] = useState(true);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const selected = useMemo(() => ROLE_OPTIONS.find((option) => option.value === role) ?? ROLE_OPTIONS[2], [role]);
@@ -79,8 +78,7 @@ function LoginForm() {
               <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
                 {err ? <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{err}</p> : null}
                 <div><Label>Email address</Label><Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={`${selected.label.toLowerCase()}@swms.local`} /></div>
-                <div><Label>Password</Label><div className="relative"><Input type={show ? "text" : "password"} required autoComplete={remember ? "current-password" : "off"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" /><button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-3 text-xs font-semibold text-green-700">{show ? "Hide" : "Show"}</button></div></div>
-                <label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me</label>
+                <div><Label>Password</Label><div className="relative"><Input type={show ? "text" : "password"} required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" /><button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-3 text-xs font-semibold text-green-700">{show ? "Hide" : "Show"}</button></div></div>
                 <Button disabled={loading}>{loading ? "Signing in…" : `Sign in as ${selected.label}`}</Button>
               </form>
               <p className="mt-5 text-center text-xs text-slate-500">Admin and collector accounts are issued by an authorized SWMS administrator.</p>

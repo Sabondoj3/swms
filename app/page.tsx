@@ -175,7 +175,7 @@ export default function Home() {
 
           <div className="mt-8 rounded-2xl bg-green-700 p-8 text-center text-white">
             <p className="text-xl font-bold">
-              Help keep your campus clean today
+              Help keep your community clean today
             </p>
 
             <p className="mt-2 text-sm text-green-100">
