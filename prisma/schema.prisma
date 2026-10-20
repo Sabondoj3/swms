@@ -343,6 +343,17 @@ model CollectorPayment {
   @@map("collector_payments")
 }
 
+model CollectorRate {
+  id            String            @id @default(uuid())
+  wasteCategory WasteCategoryEnum @unique
+  amount        Int               @default(50)
+  currency      String            @default("SLE")
+  updatedAt     DateTime          @updatedAt
+  createdAt     DateTime          @default(now())
+
+  @@map("collector_rates")
+}
+
 model PushSubscription {
   id        String   @id @default(uuid())
   userId    String

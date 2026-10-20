@@ -8,7 +8,7 @@ type Report = { id: string; reportNumber: string; address: string; wasteCategory
 
 export default function CollectorPage() {
   const [jobs, setJobs] = useState<Report[]>([]);
-  const [earnings, setEarnings] = useState({ total: 0, count: 0 });
+  const [earnings, setEarnings] = useState({ total: 0, count: 0, monthlyTotal: 0, monthlyCount: 0 });
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
   const [celebration, setCelebration] = useState<{ title: string; message: string } | null>(null);
@@ -17,7 +17,7 @@ export default function CollectorPage() {
     const r = await fetch("/api/reports").then((x) => x.json()).catch(() => ({ reports: [] }));
     setJobs(r.reports ?? []);
     const e = await fetch("/api/collector/earnings").then((x) => x.json()).catch(() => ({ total: 0, count: 0 }));
-    setEarnings({ total: e.total ?? 0, count: e.count ?? 0 });
+    setEarnings({ total: e.total ?? 0, count: e.count ?? 0, monthlyTotal: e.monthlyTotal ?? 0, monthlyCount: e.monthlyCount ?? 0 });
   }
   useEffect(() => { load(); const timer = window.setInterval(load, 15000); return () => window.clearInterval(timer); }, []);
 
@@ -49,7 +49,7 @@ export default function CollectorPage() {
       <TopBar />
       <main className="mx-auto max-w-3xl px-4 py-6">
         <h1 className="text-xl font-extrabold">Today&apos;s Jobs ({jobs.length})</h1>
-        <Card className="mt-3 border-green-200 bg-green-50"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wide text-green-800">Recorded earnings</p><p className="mt-1 text-2xl font-extrabold text-green-900">SLE{earnings.total}</p></div><p className="text-right text-sm text-green-800">{earnings.count} confirmed collection{earnings.count === 1 ? "" : "s"}<br /><span className="text-xs">SLE50 per admin-confirmed job</span></p></div></Card>
+        <Card className="mt-3 border-green-200 bg-green-50"><div className="grid gap-4 sm:grid-cols-2"><div><p className="text-xs font-bold uppercase tracking-wide text-green-800">This month</p><p className="mt-1 text-2xl font-extrabold text-green-900">SLE{earnings.monthlyTotal}</p><p className="mt-1 text-sm text-green-800">{earnings.monthlyCount} confirmed collection{earnings.monthlyCount === 1 ? "" : "s"}</p></div><div className="sm:border-l sm:border-green-200 sm:pl-4"><p className="text-xs font-bold uppercase tracking-wide text-green-800">All recorded earnings</p><p className="mt-1 text-2xl font-extrabold text-green-900">SLE{earnings.total}</p><p className="mt-1 text-sm text-green-800">{earnings.count} confirmed total</p></div></div><p className="mt-3 text-xs text-green-800">Rates are set by Admin and captured when each collection is confirmed.</p></Card>
         {msg ? <p className="mt-2 rounded-lg bg-green-50 p-3 text-sm text-green-800">{msg}</p> : null}
         <div className="mt-4 grid gap-3">
           {jobs.map((j) => (

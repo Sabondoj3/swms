@@ -119,15 +119,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (isAdmin && (report.status === "COLLECTED" || report.status === "COMPLETED") && parsed.data.status === "COMPLETED") {
       const assignment = await prisma.collectorAssignment.findFirst({ where: { reportId: report.id }, orderBy: { assignedAt: "desc" } });
       if (assignment) {
+        const configuredRate = await prisma.collectorRate.findUnique({ where: { wasteCategory: report.wasteCategory } });
+        const paymentAmount = configuredRate?.amount ?? 50;
+        const paymentCurrency = configuredRate?.currency ?? "SLE";
         const existingPayment = await prisma.collectorPayment.findUnique({ where: { reportId: report.id }, select: { id: true } });
         await prisma.collectorPayment.upsert({
           where: { reportId: report.id },
-          create: { reportId: report.id, collectorId: assignment.collectorId, amount: 50, currency: "SLE", status: "RECORDED", confirmedById: me.id },
-          update: { collectorId: assignment.collectorId, amount: 50, currency: "SLE", status: "RECORDED", confirmedById: me.id, confirmedAt: new Date() },
+          create: { reportId: report.id, collectorId: assignment.collectorId, amount: paymentAmount, currency: paymentCurrency, status: "RECORDED", confirmedById: me.id },
+          update: {},
         });
         if (!existingPayment) {
-          await notifyUser({ userId: assignment.collectorId, title: "Collection payment recorded", message: `${report.reportNumber} confirmed complete — SLE50 recorded. Admin comment: ${parsed.data.comment}`, type: "SYSTEM", reportId: report.id, link: "/collector" });
-          await audit({ actorId: me.id, action: "PAYMENT_RECORDED", entity: "CollectorPayment", entityId: report.id, metadata: { collectorId: assignment.collectorId, amount: 50, currency: "SLE" } });
+          await notifyUser({ userId: assignment.collectorId, title: "Collection payment recorded", message: `${report.reportNumber} confirmed complete — ${paymentCurrency}${paymentAmount} recorded. Admin comment: ${parsed.data.comment}`, type: "SYSTEM", reportId: report.id, link: "/collector" });
+          await audit({ actorId: me.id, action: "PAYMENT_RECORDED", entity: "CollectorPayment", entityId: report.id, metadata: { collectorId: assignment.collectorId, amount: paymentAmount, currency: paymentCurrency, wasteCategory: report.wasteCategory } });
         }
       }
     }
