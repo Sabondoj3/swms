@@ -56,7 +56,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const isAdmin = me.role === "ADMIN" || me.role === "SUPER_ADMIN";
     const isCollector = me.role === "COLLECTOR";
     if (isCollector && parsed.data.status === "COLLECTED" && (!body.completionPhoto || typeof body.completionPhoto !== "string")) return NextResponse.json({ error: "Upload collection evidence before marking this job collected" }, { status: 400 });
-    if (isAdmin && report.status === "COLLECTED" && parsed.data.status === "COMPLETED" && !parsed.data.comment?.trim()) return NextResponse.json({ error: "Add a confirmation comment before approving this collection" }, { status: 400 });
+    if (isAdmin && (report.status === "COLLECTED" || report.status === "COMPLETED") && parsed.data.status === "COMPLETED" && !parsed.data.comment?.trim()) return NextResponse.json({ error: "Add a confirmation comment before approving this collection" }, { status: 400 });
     const activeAssign = await prisma.collectorAssignment.findFirst({ where: { reportId: report.id, collectorId: me.role === "COLLECTOR" ? me.id : undefined }, orderBy: { assignedAt: "desc" } });
 
     // Authorization matrix
@@ -116,16 +116,19 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (isCollector && report.status !== "COLLECTED" && parsed.data.status === "COLLECTED" && body.completionPhoto) {
       await notifyAdmins({ title: "Collection ready for confirmation", message: `${report.reportNumber} was marked collected with evidence. Review and confirm the collector payment.`, type: "WASTE_COLLECTED", reportId: report.id, link: `/admin/reports/${report.id}` });
     }
-    if (isAdmin && report.status === "COLLECTED" && parsed.data.status === "COMPLETED") {
+    if (isAdmin && (report.status === "COLLECTED" || report.status === "COMPLETED") && parsed.data.status === "COMPLETED") {
       const assignment = await prisma.collectorAssignment.findFirst({ where: { reportId: report.id }, orderBy: { assignedAt: "desc" } });
       if (assignment) {
+        const existingPayment = await prisma.collectorPayment.findUnique({ where: { reportId: report.id }, select: { id: true } });
         await prisma.collectorPayment.upsert({
           where: { reportId: report.id },
           create: { reportId: report.id, collectorId: assignment.collectorId, amount: 50, currency: "SLE", status: "RECORDED", confirmedById: me.id },
           update: { collectorId: assignment.collectorId, amount: 50, currency: "SLE", status: "RECORDED", confirmedById: me.id, confirmedAt: new Date() },
         });
-        await notifyUser({ userId: assignment.collectorId, title: "Collection payment recorded", message: `${report.reportNumber} confirmed complete — SLE50 recorded. Admin comment: ${parsed.data.comment}`, type: "SYSTEM", reportId: report.id, link: "/collector" });
-        await audit({ actorId: me.id, action: "PAYMENT_RECORDED", entity: "CollectorPayment", entityId: report.id, metadata: { collectorId: assignment.collectorId, amount: 50, currency: "SLE" } });
+        if (!existingPayment) {
+          await notifyUser({ userId: assignment.collectorId, title: "Collection payment recorded", message: `${report.reportNumber} confirmed complete — SLE50 recorded. Admin comment: ${parsed.data.comment}`, type: "SYSTEM", reportId: report.id, link: "/collector" });
+          await audit({ actorId: me.id, action: "PAYMENT_RECORDED", entity: "CollectorPayment", entityId: report.id, metadata: { collectorId: assignment.collectorId, amount: 50, currency: "SLE" } });
+        }
       }
     }
 
