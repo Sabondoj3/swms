@@ -25,7 +25,7 @@ export default function RegisterPage() {
   return (
     <main className="mx-auto max-w-md px-4 py-10">
       <Link href="/" className="text-sm text-green-700">← Home</Link>
-      <h1 className="mt-4 text-2xl font-extrabold">Create account</h1>
+      <h1 className="mt-4 text-2xl font-extrabold">Create citizen account</h1>
       <p className="text-sm text-slate-500">Join your campus cleanup community</p>
       <Card className="mt-6">
         <form onSubmit={submit} className="flex flex-col gap-3">
@@ -43,6 +43,7 @@ export default function RegisterPage() {
           <Button disabled={loading}>{loading ? "Creating…" : "Register"}</Button>
         </form>
       </Card>
+      <p className="mt-3 text-center text-xs text-slate-500">Collector accounts are issued by an authorized SWMS administrator.</p>
       <p className="mt-4 text-center text-sm">Have an account? <Link href="/login" className="font-semibold text-green-700">Login</Link></p>
     </main>
   );
