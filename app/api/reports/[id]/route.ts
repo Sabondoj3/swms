@@ -26,7 +26,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const me = session.user as unknown as { id: string; role: string };
   const report = await prisma.wasteReport.findUnique({
     where: { id: params.id },
-    include: { images: true, collectionPoint: true, reporter: { select: { id: true, fullName: true, email: true } }, assignments: { include: { collector: { select: { id: true, fullName: true } } } }, history: { orderBy: { createdAt: "asc" } } },
+    include: { images: true, collectionPoint: true, collectorPayment: true, reporter: { select: { id: true, fullName: true, email: true } }, assignments: { include: { collector: { select: { id: true, fullName: true } } } }, history: { orderBy: { createdAt: "asc" } } },
   });
   if (!report) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (me.role === "PUBLIC" && report.reporterId !== me.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
