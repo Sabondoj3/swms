@@ -11,13 +11,29 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
   const [priority, setPriority] = useState("");
   const [comment, setComment] = useState("");
   const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [confirmationPopup, setConfirmationPopup] = useState<{ message: string; amount: number; currency: string } | null>(null);
 
   async function load() {
-    const r = await fetch(`/api/reports/${params.id}`).then((x) => x.json()).catch(() => null);
-    if (r?.report) { setReport(r.report); setStatus(r.report.status); setPriority(r.report.priority); }
-    const u = await fetch("/api/users").then((x) => x.json()).catch(() => ({ users: [] }));
-    setCollectors((u.users ?? []).filter((x: { role: string }) => x.role === "COLLECTOR"));
+    setLoading(true);
+    setLoadError("");
+    try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 10000);
+      const response = await fetch(`/api/reports/${params.id}`, { cache: "no-store", signal: controller.signal });
+      window.clearTimeout(timeout);
+      const r = await response.json().catch(() => ({}));
+      if (!response.ok || !r.report) throw new Error(r.error ?? "Could not load this report");
+      setReport(r.report); setStatus(r.report.status); setPriority(r.report.priority);
+      const usersResponse = await fetch("/api/users", { cache: "no-store" });
+      const u = await usersResponse.json().catch(() => ({}));
+      if (usersResponse.ok) setCollectors((u.users ?? []).filter((x: { role: string }) => x.role === "COLLECTOR"));
+    } catch (error) {
+      setLoadError(error instanceof DOMException && error.name === "AbortError" ? "This report took too long to load. Check your connection and try again." : error instanceof Error ? error.message : "Could not load this report.");
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => { load(); }, [params.id]);
 
@@ -41,7 +57,8 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
     else { setMsg("Collector assigned"); load(); }
   }
 
-  if (!report) return <main className="p-8 text-sm">Loadingâ€¦</main>;
+  if (loading) return <main className="mx-auto max-w-3xl p-8 text-sm text-slate-500">Loading report…</main>;
+  if (!report) return <main className="mx-auto max-w-3xl p-8"><Card className="border-red-200 bg-red-50"><p className="font-semibold text-red-800">{loadError || "Report could not be opened."}</p><SecondaryButton className="mt-3" onClick={load}>Try again</SecondaryButton></Card></main>;
   return (
     <main className="mx-auto max-w-4xl px-4 py-6">
       <a

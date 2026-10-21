@@ -21,24 +21,28 @@ const TERMINAL: Record<string, string[]> = {
 };
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const me = session.user as unknown as { id: string; role: string };
-  const report = await prisma.wasteReport.findUnique({
-    where: { id: params.id },
-    include: { images: true, collectionPoint: true, collectorPayment: true, reporter: { select: { id: true, fullName: true, email: true } }, assignments: { include: { collector: { select: { id: true, fullName: true } } } }, history: { orderBy: { createdAt: "asc" } } },
-  });
-  if (!report) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (me.role === "PUBLIC" && report.reporterId !== me.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  if (me.role === "COLLECTOR") {
-    const mine = report.assignments.some((a) => (a.collector as unknown as { id: string }).id === me.id);
-    if (!mine && report.reporterId !== me.id) {
-      // allow collectors to see assigned only; admins see all
-      const anyAssign = await prisma.collectorAssignment.findFirst({ where: { reportId: report.id, collectorId: me.id } });
-      if (!anyAssign) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const me = session.user as unknown as { id: string; role: string };
+    const report = await prisma.wasteReport.findUnique({
+      where: { id: params.id },
+      include: { images: true, collectionPoint: true, collectorPayment: true, reporter: { select: { id: true, fullName: true, email: true } }, assignments: { include: { collector: { select: { id: true, fullName: true } } } }, history: { orderBy: { createdAt: "asc" } } },
+    });
+    if (!report) return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    if (me.role === "PUBLIC" && report.reporterId !== me.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (me.role === "COLLECTOR") {
+      const mine = report.assignments.some((a) => (a.collector as unknown as { id: string }).id === me.id);
+      if (!mine && report.reporterId !== me.id) {
+        const anyAssign = await prisma.collectorAssignment.findFirst({ where: { reportId: report.id, collectorId: me.id } });
+        if (!anyAssign) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
+    return NextResponse.json({ report });
+  } catch (error) {
+    console.error("report lookup failed", error);
+    return NextResponse.json({ error: "Could not load report" }, { status: 500 });
   }
-  return NextResponse.json({ report });
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
@@ -114,7 +118,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       await notifyUser({ userId: report.reporterId, title: "Collection update", message: `${report.reportNumber} is ${parsed.data.status.replace(/_/g, " ").toLowerCase()}`, type: "COLLECTION_STARTED", reportId: report.id, link: `/reports/${report.id}` });
     }
     if (isCollector && report.status !== "COLLECTED" && parsed.data.status === "COLLECTED" && body.completionPhoto) {
-      await notifyAdmins({ title: "Collection ready for confirmation", message: `${report.reportNumber} was marked collected with evidence. Review and confirm the collector payment.`, type: "WASTE_COLLECTED", reportId: report.id, link: `/admin/reports/${report.id}` });
+      await notifyAdmins({ title: "Collection ready for confirmation", message: `${report.reportNumber} was marked collected with evidence. Review and confirm the collector payment.`, type: "WASTE_COLLECTED", reportId: report.id, link: "/admin/confirmations" });
     }
     if (isAdmin && (report.status === "COLLECTED" || report.status === "COMPLETED") && parsed.data.status === "COMPLETED") {
       const assignment = await prisma.collectorAssignment.findFirst({ where: { reportId: report.id }, orderBy: { assignedAt: "desc" } });
