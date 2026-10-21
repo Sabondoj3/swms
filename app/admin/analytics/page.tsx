@@ -8,7 +8,7 @@ const COLORS = ["#16a34a", "#2563eb", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"
 export default function AnalyticsPage() {
   const [data, setData] = useState<{ kpis: Record<string, number>; byStatus: { status: string; _count: number }[]; byCategory: { wasteCategory: string; _count: number }[]; byPriority: { priority: string; _count: number }[]; byMonth: { month: string; count: number }[]; topPoints: { point: string; count: number }[]; topCollectors: { collector: string; count: number }[] } | null>(null);
   useEffect(() => { fetch("/api/analytics").then((r) => r.json()).then(setData).catch(() => {}); }, []);
-  if (!data) return <main className="p-8 text-sm">Loading analyticsâ€¦</main>;
+  if (!data) return <main className="p-8 text-sm">Loading analytics…</main>;
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
       <a
@@ -27,9 +27,9 @@ export default function AnalyticsPage() {
         <Card><p className="font-bold">Waste category</p><div className="h-64"><ResponsiveContainer><PieChart><Pie data={data.byCategory} dataKey="_count" nameKey="wasteCategory" outerRadius={90} label>{data.byCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer></div></Card>
         <Card><p className="font-bold">Top points & collectors</p>
           <p className="mt-2 text-xs font-bold text-slate-500">POINTS</p>
-          {data.topPoints.map((t) => <p key={t.point} className="text-sm">{t.point} â€” <strong>{t.count}</strong></p>)}
+          {data.topPoints.map((t) => <p key={t.point} className="text-sm">{t.point} — <strong>{t.count}</strong></p>)}
           <p className="mt-3 text-xs font-bold text-slate-500">COLLECTORS</p>
-          {data.topCollectors.map((t) => <p key={t.collector} className="text-sm">{t.collector} â€” <strong>{t.count}</strong></p>)}
+          {data.topCollectors.map((t) => <p key={t.collector} className="text-sm">{t.collector} — <strong>{t.count}</strong></p>)}
         </Card>
       </div>
     </main>
