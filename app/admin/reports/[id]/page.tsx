@@ -73,7 +73,7 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
       <div className="mt-3 grid gap-2">{report.images.map((im, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img key={i} src={im.imageUrl} alt={im.type} className="w-full rounded-2xl object-cover" />))}</div>
-      <Card className="mt-3 text-sm"><p><strong>{report.address}</strong></p><p>{report.wasteCategory} â€¢ {report.problemType}</p><p className="mt-1 text-slate-600">{report.description}</p></Card>
+      <Card className="mt-3 text-sm"><p><strong>{report.address}</strong></p><p>{report.wasteCategory} • {report.problemType}</p><p className="mt-1 text-slate-600">{report.description}</p></Card>
       <div className="mt-2"><Timeline current={report.status} /></div>
       <Card className="mt-4">
         <p className="font-bold">Verify / update</p>
@@ -88,12 +88,12 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
       <Card className="mt-4">
         <p className="font-bold">Assign collector</p>
         <div className="mt-2 flex flex-col gap-2">
-          <select value={collectorId} onChange={(e) => setCollectorId(e.target.value)} className="rounded-xl border px-3 py-2 text-sm"><option value="">Select collectorâ€¦</option>{collectors.map((c) => <option key={c.id} value={c.id}>{c.fullName} â€” {c.activeJobs} active</option>)}</select>
+          <select value={collectorId} onChange={(e) => setCollectorId(e.target.value)} className="rounded-xl border px-3 py-2 text-sm"><option value="">Select collector…</option>{collectors.map((c) => <option key={c.id} value={c.id}>{c.fullName} — {c.activeJobs} active</option>)}</select>
           <SecondaryButton onClick={assign} disabled={!collectorId}>Assign</SecondaryButton>
         </div>
       </Card>
       <h2 className="mt-6 font-bold">History</h2>
-      <div className="mt-2 grid gap-2">{report.history.map((h) => <Card key={h.id}><p className="text-xs font-bold">{h.oldStatus ?? "â€”"} â†’ {h.newStatus}</p><p className="text-xs text-slate-500">{h.comment}</p></Card>)}</div>
+      <div className="mt-2 grid gap-2">{report.history.map((h) => <Card key={h.id}><p className="text-xs font-bold">{h.oldStatus ?? "—"} → {h.newStatus}</p><p className="text-xs text-slate-500">{h.comment}</p></Card>)}</div>
       {confirmationPopup ? <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 px-4" role="dialog" aria-modal="true" aria-labelledby="admin-confirmation-title"><div className="w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl"><div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-green-100 text-3xl text-green-700" aria-hidden="true">✓</div><h2 id="admin-confirmation-title" className="mt-4 text-2xl font-extrabold text-slate-900">Collection confirmed</h2><p className="mt-3 text-sm leading-6 text-slate-600">{confirmationPopup.message}. The payment is now visible in the collector&apos;s dashboard.</p><p className="mt-3 text-3xl font-extrabold text-green-700">{confirmationPopup.currency}{confirmationPopup.amount}</p><button type="button" onClick={() => setConfirmationPopup(null)} className="mt-6 w-full rounded-xl bg-green-600 px-5 py-3 font-semibold text-white transition hover:bg-green-700">Continue</button></div></div> : null}
     </main>
   );
