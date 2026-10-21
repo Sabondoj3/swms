@@ -118,7 +118,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       await notifyUser({ userId: report.reporterId, title: "Collection update", message: `${report.reportNumber} is ${parsed.data.status.replace(/_/g, " ").toLowerCase()}`, type: "COLLECTION_STARTED", reportId: report.id, link: `/reports/${report.id}` });
     }
     if (isCollector && report.status !== "COLLECTED" && parsed.data.status === "COLLECTED" && body.completionPhoto) {
-      await notifyAdmins({ title: "Collection ready for confirmation", message: `${report.reportNumber} was marked collected with evidence. Review and confirm the collector payment.`, type: "WASTE_COLLECTED", reportId: report.id, link: `/admin/reports/${report.id}` });
+      await notifyAdmins({ title: "Collection ready for confirmation", message: `${report.reportNumber} was marked collected with evidence. Review and confirm the collector payment.`, type: "WASTE_COLLECTED", reportId: report.id, link: "/admin/confirmations" });
     }
     if (isAdmin && (report.status === "COLLECTED" || report.status === "COMPLETED") && parsed.data.status === "COMPLETED") {
       const assignment = await prisma.collectorAssignment.findFirst({ where: { reportId: report.id }, orderBy: { assignedAt: "desc" } });

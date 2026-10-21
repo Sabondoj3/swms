@@ -11,6 +11,7 @@ type NotificationItem = {
   read: boolean;
   createdAt: string;
   link: string | null;
+  type: string;
 };
 
 export default function NotificationsPage() {
@@ -139,7 +140,9 @@ export default function NotificationsPage() {
 
         {!loading &&
           !loadError &&
-          items.map((n) => (
+          items.map((n) => {
+            const openLink = n.type === "WASTE_COLLECTED" && n.link?.startsWith("/admin/reports/") ? "/admin/confirmations" : n.link;
+            return (
             <Card
               key={n.id}
               className={
@@ -163,9 +166,9 @@ export default function NotificationsPage() {
               </p>
 
               <div className="mt-3 flex flex-wrap gap-3">
-                {n.link ? (
+                {openLink ? (
                   <Link
-                    href={n.link}
+                    href={openLink}
                     className="text-xs font-semibold text-green-700 hover:underline"
                   >
                     Open →
@@ -185,7 +188,8 @@ export default function NotificationsPage() {
                 ) : null}
               </div>
             </Card>
-          ))}
+            );
+          })}
 
         {!loading &&
         !loadError &&
