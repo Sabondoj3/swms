@@ -23,7 +23,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const assignment = report.assignments.find((item) => item.collectorId);
     if (!assignment) return NextResponse.json({ error: "No collector is assigned to this report" }, { status: 409 });
 
-    const rate = await prisma.collectorRate.findUnique({ where: { wasteCategory: report.wasteCategory } });
+    let rate = null;
+    try {
+      rate = await prisma.collectorRate.findUnique({ where: { wasteCategory: report.wasteCategory } });
+    } catch (rateError) {
+      console.error("optional collector rate lookup failed", rateError);
+    }
     const amount = rate?.amount ?? 50;
     const currency = rate?.currency ?? "SLE";
     const result = await prisma.$transaction(async (tx) => {
@@ -48,6 +53,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return NextResponse.json({ ok: true, report: result.updatedReport, payment: result.payment, paymentCreated: result.paymentCreated, message: `${result.payment.currency}${result.payment.amount} payment assigned to the collector` });
   } catch (error) {
     console.error("collection confirmation failed", error);
-    return NextResponse.json({ error: "Could not confirm collection or assign payment" }, { status: 500 });
+    const detail = error instanceof Error ? error.message : "";
+    if (detail.includes("collector_payments") || detail.includes("collector_rates")) {
+      return NextResponse.json({ error: "Confirmation needs the collector payment migrations. Run `npx prisma migrate deploy` against the production database, then try again." }, { status: 503 });
+    }
+    return NextResponse.json({ error: "Could not confirm collection or assign payment. Check that the report has an assigned collector and try again." }, { status: 500 });
   }
 }

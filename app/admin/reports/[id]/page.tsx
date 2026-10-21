@@ -11,6 +11,7 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
   const [priority, setPriority] = useState("");
   const [comment, setComment] = useState("");
   const [msg, setMsg] = useState("");
+  const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [confirmationPopup, setConfirmationPopup] = useState<{ message: string; amount: number; currency: string } | null>(null);
@@ -45,10 +46,20 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
   }
   async function confirmCollection() {
     if (!comment.trim()) { setMsg("Add a confirmation comment before approving this collection."); return; }
-    const res = await fetch(`/api/reports/${params.id}/confirm`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ comment: comment.trim() }) });
-    const d = await res.json();
-    if (!res.ok) setMsg(d.error ?? "Confirmation failed");
-    else { setMsg(d.message ?? "Collection confirmed and payment recorded"); setConfirmationPopup({ message: d.message ?? "Collection confirmed and payment recorded", amount: d.payment?.amount ?? 50, currency: d.payment?.currency ?? "SLE" }); load(); }
+    setConfirming(true);
+    try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`/api/reports/${params.id}/confirm`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ comment: comment.trim() }), signal: controller.signal });
+      window.clearTimeout(timeout);
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) setMsg(d.error ?? "Confirmation failed");
+      else { setMsg(d.message ?? "Collection confirmed and payment recorded"); setConfirmationPopup({ message: d.message ?? "Collection confirmed and payment recorded", amount: d.payment?.amount ?? 50, currency: d.payment?.currency ?? "SLE" }); load(); }
+    } catch (error) {
+      setMsg(error instanceof DOMException && error.name === "AbortError" ? "Confirmation timed out. Check the database migration status and try again." : "Confirmation failed. Check the database and try again.");
+    } finally {
+      setConfirming(false);
+    }
   }
   async function assign() {
     const res = await fetch(`/api/reports/${params.id}/assign`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reportId: params.id, collectorId }) });
@@ -84,7 +95,7 @@ export default function AdminReportDetail({ params }: { params: { id: string } }
         </div>
         <Button onClick={saveStatus} className="mt-3">Save status</Button>
       </Card>
-      {report.status === "COLLECTED" || (report.status === "COMPLETED" && !report.collectorPayment) ? <Card className="mt-4 border-green-200 bg-green-50"><p className="font-bold text-green-900">{report.status === "COLLECTED" ? "Collection awaiting confirmation" : "Payment record needs repair"}</p><p className="mt-1 text-sm text-green-800">Review the evidence, add a confirmation comment, then confirm. The system will ensure this report has one configured payment record for the assigned collector.</p><Button onClick={confirmCollection} className="mt-3 bg-green-700">{report.status === "COLLECTED" ? "Confirm collection and assign payment" : "Repair payment record"}</Button></Card> : null}
+      {report.status === "COLLECTED" || (report.status === "COMPLETED" && !report.collectorPayment) ? <Card className="mt-4 border-green-200 bg-green-50"><p className="font-bold text-green-900">{report.status === "COLLECTED" ? "Collection awaiting confirmation" : "Payment record needs repair"}</p><p className="mt-1 text-sm text-green-800">Review the evidence, add a confirmation comment, then confirm. The system will ensure this report has one configured payment record for the assigned collector.</p><Button disabled={confirming} onClick={confirmCollection} className="mt-3 bg-green-700">{confirming ? "Confirming…" : report.status === "COLLECTED" ? "Confirm collection and assign payment" : "Repair payment record"}</Button></Card> : null}
       <Card className="mt-4">
         <p className="font-bold">Assign collector</p>
         <div className="mt-2 flex flex-col gap-2">

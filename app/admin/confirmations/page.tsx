@@ -55,25 +55,21 @@ export default function AdminConfirmationsPage() {
     setBusy(report.id);
     setError("");
     setMessage("");
-    const response = await fetch(`/api/reports/${report.id}/confirm`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ comment }),
-    });
-    const data = await response.json();
-    setBusy(null);
-    if (!response.ok) {
-      setError(data.error ?? "Could not confirm collection");
-      return;
+    try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 15000);
+      const response = await fetch(`/api/reports/${report.id}/confirm`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ comment }), signal: controller.signal });
+      window.clearTimeout(timeout);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error ?? "Could not confirm collection");
+      setMessage(`${report.reportNumber} confirmed. The payment record has been saved to the collector account.`);
+      setReceipt({ reportNumber: report.reportNumber, collector: report.assignments[0]?.collector.fullName ?? "Assigned collector", amount: data.payment?.amount ?? 50, currency: data.payment?.currency ?? "SLE" });
+      await load();
+    } catch (error) {
+      setError(error instanceof DOMException && error.name === "AbortError" ? "Confirmation timed out. Check the database migration status and try again." : error instanceof Error ? error.message : "Could not confirm collection");
+    } finally {
+      setBusy(null);
     }
-    setMessage(`${report.reportNumber} confirmed. The payment record has been saved to the collector account.`);
-    setReceipt({
-      reportNumber: report.reportNumber,
-      collector: report.assignments[0]?.collector.fullName ?? "Assigned collector",
-      amount: data.payment?.amount ?? 50,
-      currency: data.payment?.currency ?? "SLE",
-    });
-    await load();
   }
 
   return (
