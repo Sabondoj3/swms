@@ -29,13 +29,19 @@ export default function AdminConfirmationsPage() {
   const [receipt, setReceipt] = useState<{ reportNumber: string; collector: string; amount: number; currency: string } | null>(null);
 
   async function load() {
-    const response = await fetch("/api/admin/confirmations", { cache: "no-store" });
-    const data = await response.json();
-    if (!response.ok) {
-      setError(data.error ?? "Could not load confirmation queue");
-      return;
+    try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 10000);
+      const response = await fetch("/api/admin/confirmations", { cache: "no-store", signal: controller.signal });
+      window.clearTimeout(timeout);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error ?? "Could not load confirmation queue");
+      setReports(data.reports ?? []);
+      setError("");
+    } catch (error) {
+      setReports([]);
+      setError(error instanceof DOMException && error.name === "AbortError" ? "Confirmation queue took too long to load. Check the database connection and try again." : error instanceof Error ? error.message : "Could not load confirmation queue");
     }
-    setReports(data.reports ?? []);
   }
 
   useEffect(() => { load(); }, []);

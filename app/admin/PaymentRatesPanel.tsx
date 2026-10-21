@@ -24,15 +24,23 @@ export default function PaymentRatesPanel() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/payment-rates")
-      .then((response) => response.json())
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 10000);
+    fetch("/api/admin/payment-rates", { signal: controller.signal, cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error ?? "Unable to load payment rates.");
+        return data;
+      })
       .then((data) => {
         const nextRates = Object.fromEntries(
           (data.rates ?? []).map((rate: Rate) => [rate.wasteCategory, String(rate.amount)])
         );
         setRates(nextRates);
       })
-      .catch(() => setMessage("Unable to load payment rates."));
+      .catch((error) => setMessage(error instanceof DOMException && error.name === "AbortError" ? "Payment rates took too long to load. Try again after checking the database connection." : error instanceof Error ? error.message : "Unable to load payment rates."))
+      .finally(() => window.clearTimeout(timeout));
+    return () => { window.clearTimeout(timeout); controller.abort(); };
   }, []);
 
   async function save() {
@@ -48,14 +56,23 @@ export default function PaymentRatesPanel() {
       setSaving(false);
       return;
     }
-    const response = await fetch("/api/admin/payment-rates", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rates: payload }),
-    });
-    const data = await response.json();
-    setMessage(response.ok ? "Payment rates saved. New confirmations will use these amounts." : data.error ?? "Unable to save payment rates.");
-    setSaving(false);
+    try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 10000);
+      const response = await fetch("/api/admin/payment-rates", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rates: payload }),
+        signal: controller.signal,
+      });
+      window.clearTimeout(timeout);
+      const data = await response.json().catch(() => ({}));
+      setMessage(response.ok ? "Payment rates saved. New confirmations will use these amounts." : data.error ?? "Unable to save payment rates.");
+    } catch (error) {
+      setMessage(error instanceof DOMException && error.name === "AbortError" ? "Saving payment rates timed out. Apply the collector-rate migration and try again." : "Unable to save payment rates.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
