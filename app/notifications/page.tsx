@@ -16,16 +16,24 @@ type NotificationItem = {
 export default function NotificationsPage() {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [pushState, setPushState] = useState<"idle" | "working" | "enabled" | "unavailable" | "denied">("idle");
   const [pushMessage, setPushMessage] = useState("");
 
   async function load() {
+    setLoading(true);
+    setLoadError("");
     try {
-      const d = await fetch("/api/notifications")
-        .then((r) => r.json())
-        .catch(() => ({ notifications: [] }));
-
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 10000);
+      const response = await fetch("/api/notifications", { signal: controller.signal, cache: "no-store" });
+      window.clearTimeout(timeout);
+      const d = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(d.error ?? "Could not load notifications");
       setItems(d.notifications ?? []);
+    } catch (error) {
+      setItems([]);
+      setLoadError(error instanceof DOMException && error.name === "AbortError" ? "Notifications took too long to load. Check your connection and try again." : error instanceof Error ? error.message : "Could not load notifications.");
     } finally {
       setLoading(false);
     }
@@ -122,7 +130,15 @@ export default function NotificationsPage() {
           </p>
         ) : null}
 
+        {!loading && loadError ? (
+          <Card className="border-red-200 bg-red-50">
+            <p className="text-sm font-semibold text-red-800">{loadError}</p>
+            <SecondaryButton className="mt-3" onClick={load}>Try again</SecondaryButton>
+          </Card>
+        ) : null}
+
         {!loading &&
+          !loadError &&
           items.map((n) => (
             <Card
               key={n.id}
@@ -172,6 +188,7 @@ export default function NotificationsPage() {
           ))}
 
         {!loading &&
+        !loadError &&
         items.length === 0 ? (
           <Card>
             <p className="text-sm font-semibold">
