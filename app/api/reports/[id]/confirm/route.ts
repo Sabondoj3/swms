@@ -27,11 +27,16 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const amount = rate?.amount ?? 50;
     const currency = rate?.currency ?? "SLE";
     const result = await prisma.$transaction(async (tx) => {
-      const existingPayment = await tx.collectorPayment.findUnique({ where: { reportId: report.id }, select: { id: true, amount: true, currency: true } });
       const updatedReport = await tx.wasteReport.update({ where: { id: report.id }, data: { status: "COMPLETED", completedAt: report.completedAt ?? new Date() } });
       if (report.status !== "COMPLETED") await tx.reportStatusHistory.create({ data: { reportId: report.id, oldStatus: report.status, newStatus: "COMPLETED", changedById: me.id, comment: parsed.data.comment } });
-      const payment = existingPayment ?? await tx.collectorPayment.create({ data: { reportId: report.id, collectorId: assignment.collectorId, amount, currency, status: "RECORDED", confirmedById: me.id }, select: { id: true, amount: true, currency: true } });
-      return { updatedReport, payment, paymentCreated: !existingPayment };
+      await tx.collectorAssignment.update({ where: { id: assignment.id }, data: { status: "COMPLETED", completedAt: new Date(), notes: parsed.data.comment } });
+      const payment = await tx.collectorPayment.upsert({
+        where: { reportId: report.id },
+        create: { reportId: report.id, collectorId: assignment.collectorId, amount, currency, status: "RECORDED", confirmedById: me.id },
+        update: { collectorId: assignment.collectorId, amount, currency, status: "RECORDED", confirmedById: me.id, confirmedAt: new Date() },
+        select: { id: true, amount: true, currency: true, collectorId: true },
+      });
+      return { updatedReport, payment, paymentCreated: true };
     });
 
     if (result.paymentCreated) {

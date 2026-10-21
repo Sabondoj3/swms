@@ -169,6 +169,11 @@ export function MobileNav() {
               label: "Reports",
             },
             {
+              href: "/admin/confirmations",
+              icon: Bell,
+              label: "Payments",
+            },
+            {
               href: "/points",
               icon: MapPin,
               label: "Map",
