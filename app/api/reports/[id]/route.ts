@@ -27,7 +27,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     const me = session.user as unknown as { id: string; role: string };
     const report = await prisma.wasteReport.findUnique({
       where: { id: params.id },
-      include: { images: true, collectionPoint: true, collectorPayment: true, reporter: { select: { id: true, fullName: true, email: true } }, assignments: { include: { collector: { select: { id: true, fullName: true } } } }, history: { orderBy: { createdAt: "asc" } } },
+      include: { images: true, collectionPoint: true, reporter: { select: { id: true, fullName: true, email: true } }, assignments: { include: { collector: { select: { id: true, fullName: true } } } }, history: { orderBy: { createdAt: "asc" } } },
     });
     if (!report) return NextResponse.json({ error: "Report not found" }, { status: 404 });
     if (me.role === "PUBLIC" && report.reporterId !== me.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -38,7 +38,16 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         if (!anyAssign) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }
-    return NextResponse.json({ report });
+    let collectorPayment = null;
+    try {
+      collectorPayment = await prisma.collectorPayment.findUnique({
+        where: { reportId: report.id },
+        select: { id: true, amount: true, currency: true, status: true, confirmedAt: true },
+      });
+    } catch (paymentError) {
+      console.error("optional collector payment lookup failed", paymentError);
+    }
+    return NextResponse.json({ report: { ...report, collectorPayment } });
   } catch (error) {
     console.error("report lookup failed", error);
     return NextResponse.json({ error: "Could not load report" }, { status: 500 });
