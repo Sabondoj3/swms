@@ -18,14 +18,19 @@ async function currentCollector() {
 export async function GET() {
   const me = await currentCollector();
   if (!me) return NextResponse.json({ error: "Only collectors can view payment requests" }, { status: 403 });
-  const [earned, reserved, requests] = await Promise.all([
-    prisma.collectorPayment.aggregate({ where: { collectorId: me.id }, _sum: { amount: true } }),
-    prisma.collectorPaymentRequest.aggregate({ where: { collectorId: me.id, status: { in: ["REQUESTED", "PAID"] } }, _sum: { amount: true } }),
-    prisma.collectorPaymentRequest.findMany({ where: { collectorId: me.id }, orderBy: { createdAt: "desc" }, take: 50, select: { id: true, amount: true, currency: true, status: true, note: true, receiptUrl: true, rejectionReason: true, createdAt: true, reviewedAt: true, paidAt: true } }),
-  ]);
-  const totalEarned = earned._sum.amount ?? 0;
-  const reservedAmount = reserved._sum.amount ?? 0;
-  return NextResponse.json({ totalEarned, reservedAmount, availableBalance: Math.max(0, totalEarned - reservedAmount), requests });
+  try {
+    const [earned, reserved, requests] = await Promise.all([
+      prisma.collectorPayment.aggregate({ where: { collectorId: me.id }, _sum: { amount: true } }),
+      prisma.collectorPaymentRequest.aggregate({ where: { collectorId: me.id, status: { in: ["REQUESTED", "PAID"] } }, _sum: { amount: true } }),
+      prisma.collectorPaymentRequest.findMany({ where: { collectorId: me.id }, orderBy: { createdAt: "desc" }, take: 50, select: { id: true, amount: true, currency: true, status: true, note: true, receiptUrl: true, rejectionReason: true, createdAt: true, reviewedAt: true, paidAt: true } }),
+    ]);
+    const totalEarned = earned._sum.amount ?? 0;
+    const reservedAmount = reserved._sum.amount ?? 0;
+    return NextResponse.json({ totalEarned, reservedAmount, availableBalance: Math.max(0, totalEarned - reservedAmount), requests });
+  } catch (error) {
+    console.error("collector payment request lookup failed", error);
+    return NextResponse.json({ error: "Payment requests are not available yet. Apply the collector payment-request migration in Neon, then refresh this page." }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
