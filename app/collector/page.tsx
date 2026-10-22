@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, Button, SecondaryButton } from "@/components/ui/primitives";
 import { PriorityBadge, StatusBadge } from "@/components/reports/badges";
 import { TopBar, MobileNav } from "@/components/layout/nav";
+import PaymentRequestPanel from "./PaymentRequestPanel";
 
 type Report = { id: string; reportNumber: string; address: string; wasteCategory: string; problemType: string; priority: string; status: string; createdAt: string; description: string | null; images: { imageUrl: string }[]; reporter: { fullName: string; email: string; phone: string | null } };
 
@@ -50,6 +51,7 @@ export default function CollectorPage() {
       <main className="mx-auto max-w-3xl px-4 py-6">
         <h1 className="text-xl font-extrabold">Today&apos;s Jobs ({jobs.length})</h1>
         <Card className="mt-3 border-green-200 bg-green-50"><div className="grid gap-4 sm:grid-cols-2"><div><p className="text-xs font-bold uppercase tracking-wide text-green-800">This month</p><p className="mt-1 text-2xl font-extrabold text-green-900">SLE{earnings.monthlyTotal}</p><p className="mt-1 text-sm text-green-800">{earnings.monthlyCount} confirmed collection{earnings.monthlyCount === 1 ? "" : "s"}</p></div><div className="sm:border-l sm:border-green-200 sm:pl-4"><p className="text-xs font-bold uppercase tracking-wide text-green-800">All recorded earnings</p><p className="mt-1 text-2xl font-extrabold text-green-900">SLE{earnings.total}</p><p className="mt-1 text-sm text-green-800">{earnings.count} confirmed total</p></div></div><p className="mt-3 text-xs text-green-800">Rates are set by Admin and captured when each collection is confirmed.</p></Card>
+        <PaymentRequestPanel />
         {msg ? <p className="mt-2 rounded-lg bg-green-50 p-3 text-sm text-green-800">{msg}</p> : null}
         <div className="mt-4 grid gap-3">
           {jobs.map((j) => (

@@ -139,6 +139,8 @@ model User {
   badges            UserBadge[]
   collectorPayments CollectorPayment[]    @relation("CollectorPayments")
   confirmedPayments CollectorPayment[]    @relation("ConfirmedPayments")
+  paymentRequests   CollectorPaymentRequest[] @relation("CollectorPaymentRequests")
+  reviewedPaymentRequests CollectorPaymentRequest[] @relation("ReviewedPaymentRequests")
   pushSubscriptions PushSubscription[]
   auditLogs         AuditLog[]            @relation("Actor")
   educationalPosts  EducationalPost[]     @relation("Author")
@@ -352,6 +354,27 @@ model CollectorRate {
   createdAt     DateTime          @default(now())
 
   @@map("collector_rates")
+}
+
+model CollectorPaymentRequest {
+  id              String   @id @default(uuid())
+  collectorId     String
+  collector       User     @relation("CollectorPaymentRequests", fields: [collectorId], references: [id], onDelete: Cascade)
+  amount          Int
+  currency        String   @default("SLE")
+  status          String   @default("REQUESTED")
+  note            String?
+  receiptUrl      String?
+  reviewedById    String?
+  reviewedBy      User?    @relation("ReviewedPaymentRequests", fields: [reviewedById], references: [id], onDelete: SetNull)
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  reviewedAt      DateTime?
+  paidAt          DateTime?
+
+  @@index([collectorId, status, createdAt])
+  @@index([status, createdAt])
+  @@map("collector_payment_requests")
 }
 
 model PushSubscription {

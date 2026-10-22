@@ -174,6 +174,11 @@ export function MobileNav() {
               label: "Payments",
             },
             {
+              href: "/admin/payment-requests",
+              icon: Bell,
+              label: "Requests",
+            },
+            {
               href: "/points",
               icon: MapPin,
               label: "Map",
