@@ -7,7 +7,20 @@ import { notifyAdmins } from "@/lib/notifications";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
-const requestSchema = z.object({ amount: z.number().int().positive().max(100000), note: z.string().trim().max(500).optional() });
+const requestSchema = z.object({
+  amount: z.number().int().positive().max(100000),
+  payoutMethod: z.enum(["ORANGMONEY", "AFRIMONEY", "BANK"]),
+  payoutName: z.string().trim().max(120).optional(),
+  payoutNumber: z.string().trim().max(60).optional(),
+  bankName: z.string().trim().max(120).optional(),
+  bankAccountName: z.string().trim().max(120).optional(),
+  bankAccountNumber: z.string().trim().max(60).optional(),
+  detailsConfirmed: z.literal(true),
+  note: z.string().trim().max(500).optional(),
+}).superRefine((value, context) => {
+  if (value.payoutMethod === "BANK" && (!value.bankName || !value.bankAccountName || !value.bankAccountNumber)) context.addIssue({ code: z.ZodIssueCode.custom, message: "Enter the bank name, account name, and account number" });
+  if (value.payoutMethod !== "BANK" && (!value.payoutName || !value.payoutNumber)) context.addIssue({ code: z.ZodIssueCode.custom, message: "Enter the mobile-money name and number" });
+});
 
 async function currentCollector() {
   const session = await getServerSession(authOptions);
@@ -22,7 +35,7 @@ export async function GET() {
     const [earned, reserved, requests] = await Promise.all([
       prisma.collectorPayment.aggregate({ where: { collectorId: me.id }, _sum: { amount: true } }),
       prisma.collectorPaymentRequest.aggregate({ where: { collectorId: me.id, status: { in: ["REQUESTED", "PAID"] } }, _sum: { amount: true } }),
-      prisma.collectorPaymentRequest.findMany({ where: { collectorId: me.id }, orderBy: { createdAt: "desc" }, take: 50, select: { id: true, amount: true, currency: true, status: true, note: true, receiptUrl: true, rejectionReason: true, createdAt: true, reviewedAt: true, paidAt: true } }),
+      prisma.collectorPaymentRequest.findMany({ where: { collectorId: me.id }, orderBy: { createdAt: "desc" }, take: 50, select: { id: true, amount: true, currency: true, status: true, payoutMethod: true, payoutName: true, payoutNumber: true, bankName: true, bankAccountName: true, bankAccountNumber: true, note: true, receiptUrl: true, rejectionReason: true, createdAt: true, reviewedAt: true, paidAt: true } }),
     ]);
     const totalEarned = earned._sum.amount ?? 0;
     const reservedAmount = reserved._sum.amount ?? 0;
@@ -44,7 +57,7 @@ export async function POST(request: Request) {
       const reserved = await tx.collectorPaymentRequest.aggregate({ where: { collectorId: me.id, status: { in: ["REQUESTED", "PAID"] } }, _sum: { amount: true } });
       const available = (earned._sum.amount ?? 0) - (reserved._sum.amount ?? 0);
       if (parsed.data.amount > available) throw new Error(`INSUFFICIENT_BALANCE:${Math.max(0, available)}`);
-      const created = await tx.collectorPaymentRequest.create({ data: { collectorId: me.id as string, amount: parsed.data.amount, currency: "SLE", note: parsed.data.note || null } });
+      const created = await tx.collectorPaymentRequest.create({ data: { collectorId: me.id as string, amount: parsed.data.amount, currency: "SLE", payoutMethod: parsed.data.payoutMethod, payoutName: parsed.data.payoutName || null, payoutNumber: parsed.data.payoutNumber || null, bankName: parsed.data.bankName || null, bankAccountName: parsed.data.bankAccountName || null, bankAccountNumber: parsed.data.bankAccountNumber || null, detailsConfirmed: true, note: parsed.data.note || null } });
       return { created, availableAfter: available - parsed.data.amount };
     });
     await audit({ actorId: me.id, action: "PAYMENT_REQUESTED", entity: "CollectorPaymentRequest", entityId: result.created.id, metadata: { amount: result.created.amount, currency: result.created.currency, balanceAfterReservation: result.availableAfter } });
