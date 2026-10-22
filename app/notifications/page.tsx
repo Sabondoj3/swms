@@ -44,6 +44,13 @@ export default function NotificationsPage() {
     load();
   }, []);
 
+  function withTimeout<T>(promise: Promise<T>, message: string, milliseconds = 12000) {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => window.setTimeout(() => reject(new Error(message)), milliseconds)),
+    ]);
+  }
+
   async function markAll() {
     await fetch("/api/notifications", {
       method: "PATCH",
@@ -79,19 +86,25 @@ export default function NotificationsPage() {
       if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) { setPushState("unavailable"); setPushMessage("Phone push notifications are not supported by this browser."); return; }
       const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!publicKey) { setPushState("unavailable"); setPushMessage("Phone notifications are not configured on this deployment yet."); return; }
-      const permission = await Notification.requestPermission();
+      if (Notification.permission === "denied") { setPushState("denied"); setPushMessage("Notifications are blocked for this site. Allow them in your phone browser settings, then try again."); return; }
+      const permission = await withTimeout(Notification.requestPermission(), "The browser did not respond to the notification permission request.");
       if (permission !== "granted") { setPushState("denied"); setPushMessage("Allow notifications in your phone browser settings to receive SWMS alerts."); return; }
-      const registration = await navigator.serviceWorker.register("/sw.js");
+      const registration = await withTimeout(navigator.serviceWorker.register("/sw.js"), "The SWMS notification service could not be installed.");
+      await withTimeout(navigator.serviceWorker.ready, "The SWMS notification service did not become ready.");
       const base64 = publicKey.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(publicKey.length / 4) * 4, "=");
       const key = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
-      const subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
-      const response = await fetch("/api/push/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(subscription.toJSON()) });
-      if (!response.ok) throw new Error("Subscription failed");
+      const subscription = await withTimeout(registration.pushManager.getSubscription().then((existing) => existing ?? registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })), "The browser could not create a phone notification subscription.");
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 12000);
+      const response = await fetch("/api/push/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(subscription.toJSON()), signal: controller.signal });
+      window.clearTimeout(timer);
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error ?? "The phone notification subscription could not be saved.");
       setPushState("enabled");
       setPushMessage("Phone notifications are enabled for this device.");
-    } catch {
+    } catch (error) {
       setPushState("unavailable");
-      setPushMessage("We could not enable phone notifications. Try again after allowing notifications.");
+      setPushMessage(error instanceof DOMException && error.name === "AbortError" ? "Saving the phone notification subscription timed out. Check your connection and try again." : error instanceof Error ? error.message : "We could not enable phone notifications. Try again after allowing notifications.");
     }
   }
 
