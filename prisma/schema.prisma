@@ -363,6 +363,13 @@ model CollectorPaymentRequest {
   amount          Int
   currency        String   @default("SLE")
   status          String   @default("REQUESTED")
+  payoutMethod    String
+  payoutName      String?
+  payoutNumber    String?
+  bankName        String?
+  bankAccountName String?
+  bankAccountNumber String?
+  detailsConfirmed Boolean @default(false)
   note            String?
   receiptUrl      String?
   reviewedById    String?
