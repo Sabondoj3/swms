@@ -84,6 +84,10 @@ export default function NotificationsPage() {
     setPushMessage("");
     try {
       if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) { setPushState("unavailable"); setPushMessage("Phone push notifications are not supported by this browser."); return; }
+      if (!window.isSecureContext) { setPushState("unavailable"); setPushMessage("Phone notifications require the secure HTTPS SWMS website. Do not use an HTTP preview link."); return; }
+      const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      const isInstalledApp = window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+      if (isAppleMobile && !isInstalledApp) { setPushState("unavailable"); setPushMessage("On iPhone or iPad, open SWMS in Safari, tap Share, choose Add to Home Screen, open the new SWMS icon, then enable phone notifications again."); return; }
       const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!publicKey) { setPushState("unavailable"); setPushMessage("Phone notifications are not configured on this deployment yet."); return; }
       if (Notification.permission === "denied") { setPushState("denied"); setPushMessage("Notifications are blocked for this site. Allow them in your phone browser settings, then try again."); return; }
@@ -104,7 +108,9 @@ export default function NotificationsPage() {
       setPushMessage("Phone notifications are enabled for this device.");
     } catch (error) {
       setPushState("unavailable");
-      setPushMessage(error instanceof DOMException && error.name === "AbortError" ? "Saving the phone notification subscription timed out. Check your connection and try again." : error instanceof Error ? error.message : "We could not enable phone notifications. Try again after allowing notifications.");
+      const errorName = error instanceof DOMException ? error.name : error instanceof Error ? error.name : "UnknownError";
+      const errorMessage = error instanceof Error ? error.message : "Unknown browser error";
+      setPushMessage(errorName === "NotAllowedError" ? "The browser blocked phone notifications. Allow notifications for SWMS in browser settings, then try again." : errorName === "AbortError" ? "Saving the phone notification subscription timed out. Check your connection and try again." : `Phone notifications could not be enabled (${errorName}: ${errorMessage}).`);
     }
   }
 
