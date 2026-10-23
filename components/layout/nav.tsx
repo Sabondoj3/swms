@@ -151,6 +151,11 @@ export function MobileNav() {
             label: "Alerts",
           },
           {
+            href: "/collector-messages",
+            icon: Bell,
+            label: "Messages",
+          },
+          {
             href: "/profile",
             icon: User,
             label: "Me",
@@ -177,6 +182,11 @@ export function MobileNav() {
               href: "/admin/payment-requests",
               icon: Bell,
               label: "Requests",
+            },
+            {
+              href: "/collector-messages",
+              icon: Bell,
+              label: "Updates",
             },
             {
               href: "/points",

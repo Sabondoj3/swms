@@ -52,6 +52,7 @@ export default function CollectorPage() {
         <h1 className="text-xl font-extrabold">Today&apos;s Jobs ({jobs.length})</h1>
         <Card className="mt-3 border-green-200 bg-green-50"><div className="grid gap-4 sm:grid-cols-2"><div><p className="text-xs font-bold uppercase tracking-wide text-green-800">This month</p><p className="mt-1 text-2xl font-extrabold text-green-900">SLE{earnings.monthlyTotal}</p><p className="mt-1 text-sm text-green-800">{earnings.monthlyCount} confirmed collection{earnings.monthlyCount === 1 ? "" : "s"}</p></div><div className="sm:border-l sm:border-green-200 sm:pl-4"><p className="text-xs font-bold uppercase tracking-wide text-green-800">All recorded earnings</p><p className="mt-1 text-2xl font-extrabold text-green-900">SLE{earnings.total}</p><p className="mt-1 text-sm text-green-800">{earnings.count} confirmed total</p></div></div><p className="mt-3 text-xs text-green-800">Rates are set by Admin and captured when each collection is confirmed.</p></Card>
         <PaymentRequestPanel />
+        <a href="/collector-messages" className="mt-4 block rounded-2xl border border-blue-200 bg-blue-50 p-4 font-semibold text-blue-950 hover:border-blue-400">Admin updates & collector replies →<span className="mt-1 block text-sm font-normal text-blue-800">Read team updates and reply directly from the field.</span></a>
         {msg ? <p className="mt-2 rounded-lg bg-green-50 p-3 text-sm text-green-800">{msg}</p> : null}
         <div className="mt-4 grid gap-3">
           {jobs.map((j) => (
