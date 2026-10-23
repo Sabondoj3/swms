@@ -14,15 +14,15 @@ export default function Home() {
           <div className="absolute inset-0 -z-10 bg-green-800/25 mix-blend-multiply" />
           <div className="relative mx-auto max-w-6xl px-4 py-14 md:py-20">
             <p className="text-sm font-semibold uppercase tracking-widest text-green-100">
-              Smart Waste Management System
+              FAMBUL GREEN
             </p>
 
             <h1 className="mt-3 max-w-2xl text-3xl font-extrabold leading-tight md:text-5xl">
-              Cleaner Communities Through Smart Technology
+              One Fambul, One Cleaner Future.
             </h1>
 
             <p className="mt-4 max-w-xl text-green-50">
-              Report waste, improve collection, and help build a cleaner environment.
+              An Environmental Innovation Initiative designed and developed by BETTEH FAMBUL INITIATIVE (BFI). Report waste, improve collection, and help build a cleaner environment.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -69,7 +69,7 @@ export default function Home() {
         <section className="mx-auto max-w-6xl px-4 py-12">
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-green-700">Why SWMS matters</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-green-700">Why FAMBUL GREEN matters</p>
               <h2 className="mt-1 text-xl font-bold">The problem</h2>
             </div>
             <p className="text-xs text-slate-500">Hover or focus a card to see the evidence</p>
@@ -99,7 +99,7 @@ export default function Home() {
           className="mx-auto max-w-6xl px-4 py-6"
         >
           <h2 className="text-xl font-bold">
-            How SWMS works
+            How FAMBUL GREEN works
           </h2>
 
           <ol className="mt-4 grid gap-3 md:grid-cols-5">
@@ -179,7 +179,7 @@ export default function Home() {
             </p>
 
             <p className="mt-2 text-sm text-green-100">
-              Report waste from the web or install SWMS on your phone for quicker access.
+              Report waste from the web or install FAMBUL GREEN on your phone for quicker access.
             </p>
 
             <div className="mt-4 flex flex-wrap justify-center gap-3">

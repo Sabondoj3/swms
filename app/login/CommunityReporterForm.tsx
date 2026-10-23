@@ -35,13 +35,13 @@ export default function CommunityReporterForm() {
 
   return (
     <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
-      <div className="rounded-xl bg-green-50 p-3 text-sm leading-5 text-green-900">Tell us who you are so the SWMS team can follow up on your report. No password is needed for community reporting.</div>
+      <div className="rounded-xl bg-green-50 p-3 text-sm leading-5 text-green-900">Tell us who you are so the FAMBUL GREEN team can follow up on your report. No password is needed for community reporting.</div>
       {error ? <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       <div><Label>Full name</Label><Input required value={form.fullName} onChange={(event) => set("fullName", event.target.value)} placeholder="Your name" autoComplete="name" /></div>
       <div className="grid gap-4 sm:grid-cols-2"><div><Label>Phone number</Label><Input type="tel" value={form.phone} onChange={(event) => set("phone", event.target.value)} placeholder="+263…" autoComplete="tel" /></div><div><Label>Email address</Label><Input type="email" value={form.email} onChange={(event) => set("email", event.target.value)} placeholder="you@example.com" autoComplete="email" /></div></div>
       <p className="-mt-2 text-xs text-slate-500">Provide at least a phone number or email address.</p>
       <div><Label>Community, institution, or locality <span className="font-normal text-slate-400">(optional)</span></Label><Input value={form.institution} onChange={(event) => set("institution", event.target.value)} placeholder="Where are you reporting from?" /></div>
-      <label className="flex items-start gap-2 text-sm text-slate-600"><input type="checkbox" checked={form.terms} onChange={(event) => set("terms", event.target.checked)} className="mt-1" /> I confirm these details are genuine and agree that SWMS may contact me about this report.</label>
+      <label className="flex items-start gap-2 text-sm text-slate-600"><input type="checkbox" checked={form.terms} onChange={(event) => set("terms", event.target.checked)} className="mt-1" /> I confirm these details are genuine and agree that FAMBUL GREEN may contact me about this report.</label>
       <Button disabled={loading}>{loading ? "Opening report form…" : "Continue to report waste"}</Button>
     </form>
   );

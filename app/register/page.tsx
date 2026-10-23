@@ -40,7 +40,7 @@ export default function RegisterPage() {
           <Button disabled={loading}>{loading ? "Creating…" : "Register"}</Button>
         </form>
       </Card>
-      <p className="mt-3 text-center text-xs text-slate-500">Collector accounts are issued by an authorized SWMS administrator.</p>
+      <p className="mt-3 text-center text-xs text-slate-500">Collector accounts are issued by an authorized FAMBUL GREEN administrator.</p>
       <p className="mt-4 text-center text-sm">Have an account? <Link href="/login" className="font-semibold text-green-700">Login</Link></p>
     </main>
   );

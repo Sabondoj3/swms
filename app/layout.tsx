@@ -4,10 +4,10 @@ import "leaflet/dist/leaflet.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "SWMS — Smart Waste Management System",
-  description: "Cleaner Communities Through Smart Technology. Report waste, improve collection.",
+  title: "FAMBUL GREEN — One Fambul, One Cleaner Future",
+  description: "FAMBUL GREEN is an environmental innovation initiative by BETTEH FAMBUL INITIATIVE (BFI). Report waste, improve collection, and build a cleaner future.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "SWMS" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "FAMBUL GREEN" },
 };
 
 export const viewport: Viewport = { themeColor: "#16a34a", width: "device-width", initialScale: 1 };

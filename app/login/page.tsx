@@ -59,12 +59,12 @@ function LoginForm() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 md:py-12">
       <div className="mx-auto max-w-5xl">
-        <Link href="/" className="text-sm font-semibold text-green-700">← Back to SWMS home</Link>
+        <Link href="/" className="text-sm font-semibold text-green-700">← Back to FAMBUL GREEN home</Link>
         <div className="mt-8 grid gap-8 md:grid-cols-[0.85fr_1.15fr] md:items-start">
           <section>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-700">SWMS access</p>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-700">FAMBUL GREEN access</p>
             <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">Sign in to your workflow</h1>
-            <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">Choose the account type that matches your SWMS role. Each role opens only the tools it needs, while administrators can review the full operation.</p>
+            <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">Choose the account type that matches your FAMBUL GREEN role. Each role opens only the tools it needs, while administrators can review the full operation.</p>
             <div className="mt-6 space-y-3">
               {ROLE_OPTIONS.map((option) => {
                 const active = option.value === role;
@@ -77,11 +77,11 @@ function LoginForm() {
             {role === "PUBLIC" ? <CommunityReporterForm /> : <>
               <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
                 {err ? <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{err}</p> : null}
-                <div><Label>Email address</Label><Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={`${selected.label.toLowerCase()}@swms.local`} /></div>
+                <div><Label>Email address</Label><Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={`${selected.label.toLowerCase()}@fambulgreen.local`} /></div>
                 <div><Label>Password</Label><div className="relative"><Input type={show ? "text" : "password"} required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" /><button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-3 text-xs font-semibold text-green-700">{show ? "Hide" : "Show"}</button></div></div>
                 <Button disabled={loading}>{loading ? "Signing in…" : `Sign in as ${selected.label}`}</Button>
               </form>
-              <p className="mt-5 text-center text-xs text-slate-500">Admin and collector accounts are issued by an authorized SWMS administrator.</p>
+              <p className="mt-5 text-center text-xs text-slate-500">Admin and collector accounts are issued by an authorized FAMBUL GREEN administrator.</p>
             </>}
           </Card>
         </div>

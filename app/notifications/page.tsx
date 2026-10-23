@@ -84,17 +84,17 @@ export default function NotificationsPage() {
     setPushMessage("");
     try {
       if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) { setPushState("unavailable"); setPushMessage("Phone push notifications are not supported by this browser."); return; }
-      if (!window.isSecureContext) { setPushState("unavailable"); setPushMessage("Phone notifications require the secure HTTPS SWMS website. Do not use an HTTP preview link."); return; }
+      if (!window.isSecureContext) { setPushState("unavailable"); setPushMessage("Phone notifications require the secure HTTPS FAMBUL GREEN website. Do not use an HTTP preview link."); return; }
       const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent);
       const isInstalledApp = window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
-      if (isAppleMobile && !isInstalledApp) { setPushState("unavailable"); setPushMessage("On iPhone or iPad, open SWMS in Safari, tap Share, choose Add to Home Screen, open the new SWMS icon, then enable phone notifications again."); return; }
+      if (isAppleMobile && !isInstalledApp) { setPushState("unavailable"); setPushMessage("On iPhone or iPad, open FAMBUL GREEN in Safari, tap Share, choose Add to Home Screen, open the new FAMBUL GREEN icon, then enable phone notifications again."); return; }
       const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!publicKey) { setPushState("unavailable"); setPushMessage("Phone notifications are not configured on this deployment yet."); return; }
       if (Notification.permission === "denied") { setPushState("denied"); setPushMessage("Notifications are blocked for this site. Allow them in your phone browser settings, then try again."); return; }
       const permission = await withTimeout(Notification.requestPermission(), "The browser did not respond to the notification permission request.");
-      if (permission !== "granted") { setPushState("denied"); setPushMessage("Allow notifications in your phone browser settings to receive SWMS alerts."); return; }
-      const registration = await withTimeout(navigator.serviceWorker.register("/sw.js"), "The SWMS notification service could not be installed.");
-      await withTimeout(navigator.serviceWorker.ready, "The SWMS notification service did not become ready.");
+      if (permission !== "granted") { setPushState("denied"); setPushMessage("Allow notifications in your phone browser settings to receive FAMBUL GREEN alerts."); return; }
+      const registration = await withTimeout(navigator.serviceWorker.register("/sw.js"), "The FAMBUL GREEN notification service could not be installed.");
+      await withTimeout(navigator.serviceWorker.ready, "The FAMBUL GREEN notification service did not become ready.");
       const base64 = publicKey.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(publicKey.length / 4) * 4, "=");
       const key = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
       const subscription = await withTimeout(registration.pushManager.getSubscription().then((existing) => existing ?? registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })), "The browser could not create a phone notification subscription.");
@@ -110,7 +110,7 @@ export default function NotificationsPage() {
       setPushState("unavailable");
       const errorName = error instanceof DOMException ? error.name : error instanceof Error ? error.name : "UnknownError";
       const errorMessage = error instanceof Error ? error.message : "Unknown browser error";
-      setPushMessage(errorName === "NotAllowedError" ? "The browser blocked phone notifications. Allow notifications for SWMS in browser settings, then try again." : errorName === "AbortError" ? "Saving the phone notification subscription timed out. Check your connection and try again." : `Phone notifications could not be enabled (${errorName}: ${errorMessage}).`);
+      setPushMessage(errorName === "NotAllowedError" ? "The browser blocked phone notifications. Allow notifications for FAMBUL GREEN in browser settings, then try again." : errorName === "AbortError" ? "Saving the phone notification subscription timed out. Check your connection and try again." : `Phone notifications could not be enabled (${errorName}: ${errorMessage}).`);
     }
   }
 
@@ -141,7 +141,7 @@ export default function NotificationsPage() {
         ) : null}
       </div>
 
-      <Card className="mt-4 border-blue-200 bg-blue-50"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-semibold text-blue-950">Phone notifications</p><p className="mt-1 text-sm text-blue-800">Receive collection reviews, confirmations, and payment updates even when SWMS is in the background.</p>{pushMessage ? <p className={`mt-2 text-xs font-semibold ${pushState === "enabled" ? "text-green-700" : "text-blue-900"}`}>{pushMessage}</p> : null}</div><SecondaryButton onClick={enablePhoneNotifications} disabled={pushState === "working" || pushState === "enabled"}>{pushState === "working" ? "Enabling…" : pushState === "enabled" ? "Enabled" : "Enable on this phone"}</SecondaryButton></div></Card>
+      <Card className="mt-4 border-blue-200 bg-blue-50"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-semibold text-blue-950">Phone notifications</p><p className="mt-1 text-sm text-blue-800">Receive collection reviews, confirmations, and payment updates even when FAMBUL GREEN is in the background.</p>{pushMessage ? <p className={`mt-2 text-xs font-semibold ${pushState === "enabled" ? "text-green-700" : "text-blue-900"}`}>{pushMessage}</p> : null}</div><SecondaryButton onClick={enablePhoneNotifications} disabled={pushState === "working" || pushState === "enabled"}>{pushState === "working" ? "Enabling…" : pushState === "enabled" ? "Enabled" : "Enable on this phone"}</SecondaryButton></div></Card>
 
       <div className="mt-4 grid gap-2">
         {loading ? (

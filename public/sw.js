@@ -5,8 +5,8 @@ self.addEventListener("fetch", () => {});
 self.addEventListener("push", (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch (_) {}
-  const title = data.title || "SWMS notification";
-  const options = { body: data.message || "You have a new SWMS update.", icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", data: { link: data.link || "/notifications" } };
+  const title = data.title || "FAMBUL GREEN notification";
+  const options = { body: data.message || "You have a new FAMBUL GREEN update.", icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", data: { link: data.link || "/notifications" } };
   event.waitUntil(self.registration.showNotification(title, options));
 });
 

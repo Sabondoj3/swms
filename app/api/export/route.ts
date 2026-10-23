@@ -21,5 +21,5 @@ export async function GET(req: Request) {
     return [r.reportNumber, new Date(r.createdAt).toISOString(), (r.reporter as unknown as { fullName: string }).fullName, r.address, r.problemType, r.wasteCategory, r.priority, r.status, r.assignments[0]?.collector ? (r.assignments[0].collector as unknown as { fullName: string }).fullName : ""].map(esc).join(",");
   });
   const csv = header + rows.join("\n");
-  return new NextResponse(csv, { headers: { "Content-Type": "text/csv", "Content-Disposition": "attachment; filename=swms-reports.csv" } });
+  return new NextResponse(csv, { headers: { "Content-Type": "text/csv", "Content-Disposition": "attachment; filename=fambul-green-reports.csv" } });
 }
