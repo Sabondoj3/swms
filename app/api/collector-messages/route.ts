@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       if (!admin) return NextResponse.json({ error: "No active Admin is available to receive replies" }, { status: 409 });
       const message = await prisma.collectorMessage.create({ data: { senderId: me.id, recipientId: admin.id, audience: "ADMIN", body: parsed.data.body } });
       await audit({ actorId: me.id, action: "COLLECTOR_MESSAGE_SENT", entity: "CollectorMessage", entityId: message.id, metadata: { recipientId: admin.id } });
-      await notifyUser({ userId: admin.id, title: "Message from a collector", message: parsed.data.body.slice(0, 160), type: "SYSTEM", link: "/admin/collector-messages" });
+      await notifyUser({ userId: admin.id, title: "Message from a collector", message: parsed.data.body.slice(0, 160), type: "SYSTEM", link: "/collector-messages" });
       return NextResponse.json({ ok: true, message }, { status: 201 });
     }
     const directCollector = parsed.data.recipientId ? await prisma.user.findFirst({ where: { id: parsed.data.recipientId, role: "COLLECTOR", isActive: true }, select: { id: true } }) : null;

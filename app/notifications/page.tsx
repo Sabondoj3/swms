@@ -160,7 +160,7 @@ export default function NotificationsPage() {
         {!loading &&
           !loadError &&
           items.map((n) => {
-            const openLink = n.type === "WASTE_COLLECTED" && n.link?.startsWith("/admin/reports/") ? "/admin/confirmations" : n.link;
+            const openLink = n.link === "/admin/collector-messages" ? "/collector-messages" : n.type === "WASTE_COLLECTED" && n.link?.startsWith("/admin/reports/") ? "/admin/confirmations" : n.link;
             return (
             <Card
               key={n.id}
