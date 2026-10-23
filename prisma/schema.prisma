@@ -141,6 +141,8 @@ model User {
   confirmedPayments CollectorPayment[]    @relation("ConfirmedPayments")
   paymentRequests   CollectorPaymentRequest[] @relation("CollectorPaymentRequests")
   reviewedPaymentRequests CollectorPaymentRequest[] @relation("ReviewedPaymentRequests")
+  sentCollectorMessages CollectorMessage[] @relation("MessageSender")
+  receivedCollectorMessages CollectorMessage[] @relation("MessageRecipient")
   pushSubscriptions PushSubscription[]
   auditLogs         AuditLog[]            @relation("Actor")
   educationalPosts  EducationalPost[]     @relation("Author")
@@ -382,6 +384,22 @@ model CollectorPaymentRequest {
   @@index([collectorId, status, createdAt])
   @@index([status, createdAt])
   @@map("collector_payment_requests")
+}
+
+model CollectorMessage {
+  id          String   @id @default(uuid())
+  senderId    String
+  sender      User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId String?
+  recipient   User?    @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  audience    String   @default("COLLECTORS")
+  body        String
+  createdAt   DateTime @default(now())
+
+  @@index([recipientId, createdAt])
+  @@index([audience, createdAt])
+  @@index([senderId, createdAt])
+  @@map("collector_messages")
 }
 
 model PushSubscription {
