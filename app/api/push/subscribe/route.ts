@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("push subscription save failed", error);
     const code = (error as { code?: string }).code;
-    if (code === "P2021") return NextResponse.json({ error: "The push_subscriptions table is missing in the production database. Run the SWMS push-subscriptions SQL migration in Neon, then retry." }, { status: 503 });
+    if (code === "P2021") return NextResponse.json({ error: "The push_subscriptions table is missing in the production database. Run the FAMBUL GREEN push-subscriptions SQL migration in Neon, then retry." }, { status: 503 });
     if (code === "P2003") return NextResponse.json({ error: "Your login session refers to a user that is missing from the production database. Log out, log in again, and retry." }, { status: 409 });
     return NextResponse.json({ error: `The server could not save this phone subscription${code ? ` (${code})` : ""}.` }, { status: 503 });
   }

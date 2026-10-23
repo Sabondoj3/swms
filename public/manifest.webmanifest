@@ -1,7 +1,7 @@
 {
-  "name": "SWMS — Smart Waste Management System",
-  "short_name": "SWMS",
-  "description": "Cleaner Communities Through Smart Technology",
+  "name": "FAMBUL GREEN — One Fambul, One Cleaner Future",
+  "short_name": "FAMBUL GREEN",
+  "description": "An Environmental Innovation Initiative by BETTEH FAMBUL INITIATIVE (BFI)",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#f6faf7",

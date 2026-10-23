@@ -74,7 +74,7 @@ export default function InstallAppButton() {
 
       if (isIOS) {
         alert(
-          'To install SWMS on iPhone or iPad, open this website in Safari, tap Share, then select "Add to Home Screen".'
+          'To install FAMBUL GREEN on iPhone or iPad, open this website in Safari, tap Share, then select "Add to Home Screen".'
         );
       } else {
         alert(

@@ -20,7 +20,7 @@ function getStaff(session: unknown) {
 }
 
 function generateTemporaryPassword() {
-  return `SWMS-${crypto.randomBytes(6).toString("base64url")}`;
+  return `FG-${crypto.randomBytes(6).toString("base64url")}`;
 }
 
 export async function GET() {

@@ -24,10 +24,10 @@ export function TopBar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-green-600 font-bold text-white">
-            S
+            F
           </span>
 
-          <span className="font-bold">SWMS</span>
+          <span className="font-bold">FAMBUL GREEN</span>
         </Link>
 
         <nav className="hidden items-center gap-4 text-sm md:flex">
@@ -266,10 +266,13 @@ export function Footer() {
     <footer className="mt-16 border-t border-slate-100 bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-4">
         <div>
-          <p className="font-bold">SWMS</p>
+          <p className="font-bold">FAMBUL GREEN</p>
 
           <p className="mt-2 text-sm text-slate-500">
-            Cleaner Communities Through Smart Technology.
+            One Fambul, One Cleaner Future.
+          </p>
+          <p className="mt-2 text-xs text-slate-400">
+            An Environmental Innovation Initiative by BETTEH FAMBUL INITIATIVE (BFI).
           </p>
         </div>
 
@@ -335,7 +338,7 @@ export function Footer() {
       </div>
 
       <div className="border-t py-4 text-center text-xs text-slate-400">
-        © {new Date().getFullYear()} SWMS — Smart Waste Management System
+        © {new Date().getFullYear()} FAMBUL GREEN — An Environmental Innovation Initiative by BETTEH FAMBUL INITIATIVE (BFI)
       </div>
     </footer>
   );
